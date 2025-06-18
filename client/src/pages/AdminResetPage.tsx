@@ -63,6 +63,8 @@ export default function AdminResetPage() {
     if (stored) {
       setAdminUser(JSON.parse(stored));
     } else {
+      // Store the current page to redirect back after login
+      localStorage.setItem("adminRedirectAfterLogin", "/reset-page");
       setLocation("/admin/login");
     }
   }, [setLocation]);

@@ -49,8 +49,15 @@ export default function AdminLogin() {
         title: "Login successful",
         description: "Welcome to the admin panel",
       });
-      // Redirect to dashboard
-      setLocation("/admin/dashboard");
+      // Check if there's a redirect URL stored
+      const redirectTo = localStorage.getItem("adminRedirectAfterLogin");
+      if (redirectTo) {
+        localStorage.removeItem("adminRedirectAfterLogin");
+        setLocation(redirectTo);
+      } else {
+        // Default redirect to dashboard
+        setLocation("/admin/dashboard");
+      }
     },
     onError: (error: any) => {
       setError(error.message || "Login failed");

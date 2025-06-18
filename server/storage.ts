@@ -260,7 +260,7 @@ export interface IStorage {
 
   // Admin authentication methods
   authenticateAdmin(email: string, password: string): Promise<AdminUser | null>;
-  
+
   // Admin profile management methods
   getAdminProfile(adminId: number): Promise<any>;
   updateAdminProfile(adminId: number, updates: any): Promise<any>;
@@ -272,6 +272,17 @@ export interface IStorage {
   createDeliveryZone(zoneData: any): Promise<any>;
   updateDeliveryZone(id: number, updateData: any): Promise<any>;
   deleteDeliveryZone(id: number): Promise<boolean>;
+
+  // Account deletion methods
+  deleteUserNotifications(userId: number): Promise<void>;
+  deleteUserWishlist(userId: number): Promise<void>;
+  deleteUserReviews(userId: number): Promise<void>;
+  deleteStoreProducts(storeId: number): Promise<void>;
+  cancelStoreOrders(storeId: number): Promise<void>;
+  deleteStore(storeId: number): Promise<void>;
+  anonymizeDeliveryPartnerData(userId: number): Promise<void>;
+  cancelUserOrders(userId: number): Promise<void>;
+  deleteUser(userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1079,6 +1090,111 @@ export class DatabaseStorage implements IStorage {
       return true;
     } catch {
       return false;
+    }
+  }
+
+  // Account deletion methods
+  async deleteUserNotifications(userId: number): Promise<void> {
+    try {
+      await db.delete(notifications).where(eq(notifications.userId, userId));
+    } catch (error) {
+      console.error("Error deleting user notifications:", error);
+      throw error;
+    }
+  }
+
+  async deleteUserWishlist(userId: number): Promise<void> {
+    try {
+      await db.delete(wishlistItems).where(eq(wishlistItems.userId, userId));
+    } catch (error) {
+      console.error("Error deleting user wishlist:", error);
+      throw error;
+    }
+  }
+
+  async deleteUserReviews(userId: number): Promise<void> {
+    try {
+      await db.delete(productReviews).where(eq(productReviews.customerId, userId));
+    } catch (error) {
+      console.error("Error deleting user reviews:", error);
+      throw error;
+    }
+  }
+
+  async deleteStoreProducts(storeId: number): Promise<void> {
+    try {
+      await db.delete(products).where(eq(products.storeId, storeId));
+    } catch (error) {
+      console.error("Error deleting store products:", error);
+      throw error;
+    }
+  }
+
+  async cancelStoreOrders(storeId: number): Promise<void> {
+    try {
+      // Get order items for this store to find associated orders
+      const storeOrderItems = await db.select({ orderId: orderItems.orderId })
+        .from(orderItems)
+        .leftJoin(products, eq(orderItems.productId, products.id))
+        .where(eq(products.storeId, storeId));
+
+      const orderIds = [...new Set(storeOrderItems.map(item => item.orderId))];
+
+      for (const orderId of orderIds) {
+        await db.update(orders)
+          .set({ status: "cancelled", updatedAt: new Date() })
+          .where(eq(orders.id, orderId));
+      }
+    } catch (error) {
+      console.error("Error cancelling store orders:", error);
+      throw error;
+    }
+  }
+
+  async deleteStore(storeId: number): Promise<void> {
+    try {
+      await db.delete(stores).where(eq(stores.id, storeId));
+    } catch (error) {
+      console.error("Error deleting store:", error);
+      throw error;
+    }
+  }
+
+  async anonymizeDeliveryPartnerData(userId: number): Promise<void> {
+    try {
+      // Update delivery records to remove personal information but keep delivery history for data integrity
+      await db.update(deliveries)
+        .set({ 
+          deliveryPartnerId: null,
+          updatedAt: new Date()
+        })
+        .where(eq(deliveries.deliveryPartnerId, userId));
+
+      // Delete delivery partner profile
+      await db.delete(deliveryPartners).where(eq(deliveryPartners.userId, userId));
+    } catch (error) {
+      console.error("Error anonymizing delivery partner data:", error);
+      throw error;
+    }
+  }
+
+  async cancelUserOrders(userId: number): Promise<void> {
+    try {
+      await db.update(orders)
+        .set({ status: "cancelled", updatedAt: new Date() })
+        .where(eq(orders.customerId, userId));
+    } catch (error) {
+      console.error("Error cancelling user orders:", error);
+      throw error;
+    }
+  }
+
+  async deleteUser(userId: number): Promise<void> {
+    try {
+      await db.delete(users).where(eq(users.id, userId));
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
     }
   }
 
@@ -1918,7 +2034,7 @@ export class DatabaseStorage implements IStorage {
   async authenticateAdmin(email: string, password: string): Promise<AdminUser | null> {
     try {
       console.log('Authenticating admin:', email);
-      
+
       // First try adminUsers table
       try {
         const [admin] = await db.select()
@@ -1928,7 +2044,7 @@ export class DatabaseStorage implements IStorage {
 
         if (admin) {
           console.log('Found admin in adminUsers:', admin.email, 'Active:', admin.isActive);
-          
+
           // Check if admin is active and password matches
           if (admin.isActive && admin.password === password) {
             console.log('Authentication successful');

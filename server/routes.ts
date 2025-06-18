@@ -4176,6 +4176,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete account endpoint
+  app.delete("/api/auth/delete-account", async (req, res) => {
+    try {
+      const { userId, email, password, reason, feedback } = req.body;
+
+      if (!userId || !email || !password) {
+        return res.status(400).json({ error: "User ID, email, and password are required" });
+      }
+
+      // Verify user exists and password is correct
+      const user = await storage.getUser(parseInt(userId));
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      if (user.email !== email) {
+        return res.status(400).json({ error: "Email does not match" });
+      }
+
+      if (user.password !== password) {
+        return res.status(401).json({ error: "Invalid password" });
+      }
+
+      // Log the deletion request
+      console.log(`Account deletion requested for user ${userId} (${email}). Reason: ${reason || 'Not specified'}`);
+      
+      // Delete user data in proper order to maintain referential integrity
+      try {
+        // Delete user's notifications
+        await storage.deleteUserNotifications(parseInt(userId));
+        
+        // Delete user's cart items
+        await storage.clearCart(parseInt(userId));
+        
+        // Delete user's wishlist items
+        await storage.deleteUserWishlist(parseInt(userId));
+        
+        // Delete user's reviews
+        await storage.deleteUserReviews(parseInt(userId));
+        
+        // If user is a shopkeeper, delete their stores and related data
+        if (user.role === 'shopkeeper') {
+          const userStores = await storage.getStoresByOwnerId(parseInt(userId));
+          for (const store of userStores) {
+            // Delete store products
+            await storage.deleteStoreProducts(store.id);
+            // Delete store orders (mark as cancelled instead of hard delete for data integrity)
+            await storage.cancelStoreOrders(store.id);
+            // Delete the store
+            await storage.deleteStore(store.id);
+          }
+        }
+        
+        // If user is a delivery partner, handle delivery records
+        if (user.role === 'delivery_partner') {
+          await storage.anonymizeDeliveryPartnerData(parseInt(userId));
+        }
+        
+        // Delete user's orders (mark as cancelled for data integrity)
+        await storage.cancelUserOrders(parseInt(userId));
+        
+        // Finally, delete the user account
+        await storage.deleteUser(parseInt(userId));
+        
+        // Log successful deletion
+        console.log(`Account successfully deleted for user ${userId} (${email})`);
+        
+        res.json({ 
+          success: true, 
+          message: "Account and all associated data have been permanently deleted" 
+        });
+        
+      } catch (deletionError) {
+        console.error("Error during account deletion:", deletionError);
+        res.status(500).json({ 
+          error: "Failed to delete account data",
+          details: deletionError instanceof Error ? deletionError.message : "Unknown error"
+        });
+      }
+      
+    } catch (error) {
+      console.error("Delete account error:", error);
+      res.status(500).json({ 
+        error: "Failed to delete account",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Real-time delivery tracking API endpoints
   app.post("/api/tracking/location", async (req, res) => {
     try {

@@ -147,6 +147,14 @@ export default function Account() {
                     </Button>
                   </Link>
                 )}
+                <Link href="/delete-account">
+                  <Button 
+                    variant="outline" 
+                    className="w-full justify-start text-red-600 hover:text-red-700"
+                  >
+                    Delete Account
+                  </Button>
+                </Link>
                 <Button 
                   variant="outline" 
                   className="w-full justify-start text-red-600 hover:text-red-700"

@@ -58,6 +58,7 @@ import AdminDeliveryPartners from "@/pages/AdminDeliveryPartners";
 import OrderTracking from "@/pages/OrderTracking";
 import DeliveryMap from "@/pages/DeliveryMap";
 import NotificationBanner from "@/components/NotificationBanner";
+import { lazy } from "react";
 
 function AppRouter() {
   const { mode } = useAppMode();
@@ -117,6 +118,7 @@ function AppRouter() {
 
         {/* Real-time Tracking Demo */}
         <Route path="/tracking-demo" component={TrackingDemo} />
+        <Route path="/delete-account" component={lazy(() => import("./pages/DeleteAccount"))} />
 
         <Route component={NotFound} />
       </Switch>

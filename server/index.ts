@@ -35,10 +35,13 @@ app.use(express.urlencoded({ extended: false, limit: '50mb' }));
 // Run migrations on startup
 (async () => {
   try {
+    console.log('🔄 Starting database migrations...');
     await runMigrations();
     console.log('✅ Database migrations completed successfully');
   } catch (error) {
     console.error('❌ Migration error on startup:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
+    // Continue anyway to allow manual troubleshooting
   }
 })();
 

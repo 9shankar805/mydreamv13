@@ -30,6 +30,28 @@ import { eq, desc } from "drizzle-orm";
 const realTimeTrackingService = new RealTimeTrackingService();
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint
+  app.get("/api/health", async (req, res) => {
+    try {
+      // Test database connection
+      const testQuery = await pool.query('SELECT 1 as test');
+      res.json({ 
+        status: "healthy", 
+        database: "connected",
+        timestamp: new Date().toISOString(),
+        message: "Siraha Bazaar API is running smoothly"
+      });
+    } catch (error) {
+      console.error("Health check failed:", error);
+      res.status(500).json({ 
+        status: "unhealthy", 
+        database: "disconnected",
+        error: error instanceof Error ? error.message : "Unknown error",
+        timestamp: new Date().toISOString()
+      });
+    }
+  });
+
   // Global error handling middleware
   app.use((err: any, req: any, res: any, next: any) => {
     console.error('Unhandled error:', err);

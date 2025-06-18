@@ -44,7 +44,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import { apiPost, apiPut, apiDelete } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
@@ -120,7 +120,7 @@ export default function ShopkeeperDashboard() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(
     null,
   );
-  const { user } = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
 
   // Queries

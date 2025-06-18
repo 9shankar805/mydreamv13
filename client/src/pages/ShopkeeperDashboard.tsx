@@ -35,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/use-user";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
@@ -98,7 +98,7 @@ export default function ShopkeeperDashboard() {
   const [locationLoading, setLocationLoading] = useState(false);
   const [notificationHistory, setNotificationHistory] = useState<any[]>([]);
   const [pendingDeliveries, setPendingDeliveries] = useState<any[]>([]);
-  const { user } = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
 
   // Queries

@@ -153,8 +153,7 @@ export function useNotifications() {
                 });
               }
             }
-          });
-        }
+          }
 
         setNotifications(userNotifications);
         setUnreadCount(userNotifications.filter((n: NotificationData) => !n.isRead).length);
@@ -337,7 +336,7 @@ export function useNotifications() {
   }, []);
 
   // Add state for sound management
-  const [isPlayingSound, setIsPlayingSound] = useState(false);ion
+  const [isPlayingSound, setIsPlayingSound] = useState(false);
     showNotification(notification.title, {
       body: notification.message,
       tag: `notification-${notification.id}`

@@ -2030,6 +2030,15 @@ export class DatabaseStorage implements IStorage {
     }
   }
 
+  async getAdminByEmail(email: string): Promise<AdminUser | undefined> {
+    try {
+      const [admin] = await db.select().from(adminUsers).where(eq(adminUsers.email, email));
+      return admin;
+    } catch {
+      return undefined;
+    }
+  }
+
   async authenticateAdmin(email: string, password: string): Promise<AdminUser | null> {
     try {
       console.log('Authenticating admin:', email);

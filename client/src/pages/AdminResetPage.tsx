@@ -48,6 +48,15 @@ export default function AdminResetPage() {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [resetAction, setResetAction] = useState<any>(null);
   const [actionReason, setActionReason] = useState("");
+  const [showAdminProfileDialog, setShowAdminProfileDialog] = useState(false);
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false);
+  const [adminProfileData, setAdminProfileData] = useState({
+    fullName: "",
+    email: "",
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: ""
+  });
 
   useEffect(() => {
     const stored = localStorage.getItem("adminUser");
@@ -205,6 +214,69 @@ export default function AdminResetPage() {
     },
   });
 
+  const updateAdminProfileMutation = useMutation({
+    mutationFn: async (data: { fullName: string; email: string }) => {
+      const response = await apiRequest("/api/admin/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminId: adminUser.id, ...data }),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      setShowAdminProfileDialog(false);
+      setAdminProfileData({ ...adminProfileData, fullName: "", email: "" });
+      toast({
+        title: "Profile Updated",
+        description: "Admin profile has been updated successfully.",
+      });
+      // Update local admin user data
+      setAdminUser({
+        ...adminUser,
+        fullName: adminProfileData.fullName,
+        email: adminProfileData.email
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update admin profile.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const changeAdminPasswordMutation = useMutation({
+    mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
+      const response = await apiRequest("/api/admin/change-password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminId: adminUser.id, ...data }),
+      });
+      return response;
+    },
+    onSuccess: () => {
+      setShowPasswordDialog(false);
+      setAdminProfileData({
+        ...adminProfileData,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: ""
+      });
+      toast({
+        title: "Password Changed",
+        description: "Admin password has been changed successfully.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Password Change Failed",
+        description: "Failed to change password. Please check your current password.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAction = (action: any) => {
     setResetAction(action);
     setShowConfirmDialog(true);
@@ -314,6 +386,60 @@ export default function AdminResetPage() {
             <strong>Warning:</strong> Actions performed on this page are irreversible. Please proceed with caution and ensure you have proper backups.
           </AlertDescription>
         </Alert>
+
+        {/* Admin Profile Management */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Shield className="h-5 w-5" />
+              Admin Profile Management
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Current Email</label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">{adminUser.email}</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Full Name</label>
+                  <div className="p-3 bg-gray-50 rounded-lg">
+                    <span className="text-sm text-gray-700">{adminUser.fullName}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="space-y-3">
+                <Button
+                  onClick={() => {
+                    setAdminProfileData({
+                      ...adminProfileData,
+                      fullName: adminUser.fullName,
+                      email: adminUser.email
+                    });
+                    setShowAdminProfileDialog(true);
+                  }}
+                  className="w-full"
+                >
+                  <UserX className="h-4 w-4 mr-2" />
+                  Update Email & Name
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => setShowPasswordDialog(true)}
+                  className="w-full"
+                >
+                  <Shield className="h-4 w-4 mr-2" />
+                  Change Password
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* System Reset Section */}
         <Card className="mb-8">
@@ -615,6 +741,131 @@ export default function AdminResetPage() {
             </Table>
           </CardContent>
         </Card>
+
+        {/* Admin Profile Update Dialog */}
+        <Dialog open={showAdminProfileDialog} onOpenChange={setShowAdminProfileDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Update Admin Profile</DialogTitle>
+              <DialogDescription>
+                Update your admin account email and name
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Full Name</label>
+                <Input
+                  placeholder="Enter your full name"
+                  value={adminProfileData.fullName}
+                  onChange={(e) => setAdminProfileData({ ...adminProfileData, fullName: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Email</label>
+                <Input
+                  type="email"
+                  placeholder="Enter your email"
+                  value={adminProfileData.email}
+                  onChange={(e) => setAdminProfileData({ ...adminProfileData, email: e.target.value })}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowAdminProfileDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (adminProfileData.fullName && adminProfileData.email) {
+                    updateAdminProfileMutation.mutate({
+                      fullName: adminProfileData.fullName,
+                      email: adminProfileData.email
+                    });
+                  }
+                }}
+                disabled={updateAdminProfileMutation.isPending || !adminProfileData.fullName || !adminProfileData.email}
+              >
+                {updateAdminProfileMutation.isPending ? "Updating..." : "Update Profile"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Admin Password Change Dialog */}
+        <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Change Admin Password</DialogTitle>
+              <DialogDescription>
+                Enter your current password and choose a new secure password
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Current Password</label>
+                <Input
+                  type="password"
+                  placeholder="Enter your current password"
+                  value={adminProfileData.currentPassword}
+                  onChange={(e) => setAdminProfileData({ ...adminProfileData, currentPassword: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">New Password</label>
+                <Input
+                  type="password"
+                  placeholder="Enter your new password"
+                  value={adminProfileData.newPassword}
+                  onChange={(e) => setAdminProfileData({ ...adminProfileData, newPassword: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Confirm New Password</label>
+                <Input
+                  type="password"
+                  placeholder="Confirm your new password"
+                  value={adminProfileData.confirmPassword}
+                  onChange={(e) => setAdminProfileData({ ...adminProfileData, confirmPassword: e.target.value })}
+                />
+              </div>
+              {adminProfileData.newPassword && adminProfileData.confirmPassword && 
+               adminProfileData.newPassword !== adminProfileData.confirmPassword && (
+                <Alert className="border-red-200 bg-red-50">
+                  <XCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-red-800">
+                    Passwords do not match
+                  </AlertDescription>
+                </Alert>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (adminProfileData.currentPassword && 
+                      adminProfileData.newPassword && 
+                      adminProfileData.newPassword === adminProfileData.confirmPassword) {
+                    changeAdminPasswordMutation.mutate({
+                      currentPassword: adminProfileData.currentPassword,
+                      newPassword: adminProfileData.newPassword
+                    });
+                  }
+                }}
+                disabled={
+                  changeAdminPasswordMutation.isPending || 
+                  !adminProfileData.currentPassword || 
+                  !adminProfileData.newPassword || 
+                  adminProfileData.newPassword !== adminProfileData.confirmPassword ||
+                  adminProfileData.newPassword.length < 6
+                }
+              >
+                {changeAdminPasswordMutation.isPending ? "Changing..." : "Change Password"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Confirmation Dialog */}
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>

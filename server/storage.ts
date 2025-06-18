@@ -2180,16 +2180,17 @@ export class DatabaseStorage implements IStorage {
       
       // Define tables in deletion order (respecting foreign key constraints)
       const tablesToReset = [
-        // Core tables that exist
+        // Delete dependent data first
         { table: orderItems, name: 'order_items' },
         { table: cartItems, name: 'cart_items' },
         { table: wishlistItems, name: 'wishlist_items' },
         { table: productReviews, name: 'product_reviews' },
-        { table: products, name: 'products' },
+        { table: notifications, name: 'notifications' },
+        { table: orderTracking, name: 'order_tracking' }, // Delete order tracking before orders
         { table: orders, name: 'orders' },
+        { table: products, name: 'products' },
         { table: stores, name: 'stores' },
         { table: categories, name: 'categories' },
-        { table: notifications, name: 'notifications' },
         { table: websiteVisits, name: 'website_visits' }
       ];
       

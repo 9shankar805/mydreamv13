@@ -19,8 +19,7 @@ import Homepage from "@/pages/Homepage";
 import FoodHomepage from "@/pages/FoodHomepage";
 import Products from "@/pages/Products";
 import ProductDetail from "./pages/ProductDetail";
-import StoreDetail from "./pages/StoreDetail";
-import RestaurantDetail from "./pages/RestaurantDetail";
+import QuickFood from './pages/QuickFood';
 import Cart from "./pages/Cart";
 import Checkout from "@/pages/Checkout";
 import OrderConfirmation from "@/pages/OrderConfirmation";
@@ -70,6 +69,7 @@ function AppRouter() {
         <Route path="/products" component={Products} />
         <Route path="/products/:id" component={ProductDetail} />
         <Route path="/food/:id" component={ProductDetail} />
+        <Route path="/quick-food" component={QuickFood} />
         <Route path="/cart" component={Cart} />
         <Route path="/checkout" component={Checkout} />
         <Route path="/order-confirmation" component={OrderConfirmation} />

@@ -37,7 +37,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { apiPost, apiPut, apiDelete } from "@/lib/api";
+import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import ImageUpload from "@/components/ImageUpload";
 import { LocationPicker } from "@/components/LocationPicker";
@@ -261,10 +261,18 @@ export default function ShopkeeperDashboard() {
       };
 
       if (editingProduct) {
-        await apiPut(`/api/products/${editingProduct.id}`, productData);
+        await apiRequest(`/api/products/${editingProduct.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productData)
+        });
         toast({ title: "Product updated successfully" });
       } else {
-        await apiPost("/api/products", productData);
+        await apiRequest("/api/products", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(productData)
+        });
         toast({ title: "Product added successfully" });
       }
 
@@ -305,7 +313,9 @@ export default function ShopkeeperDashboard() {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
     try {
-      await apiDelete(`/api/products/${productId}`);
+      await apiRequest(`/api/products/${productId}`, {
+        method: "DELETE"
+      });
       toast({ title: "Product deleted successfully" });
       // Invalidate queries to refresh data
       if (currentStore) {
@@ -342,7 +352,11 @@ export default function ShopkeeperDashboard() {
         openingHours: data.storeType === 'restaurant' ? data.openingHours || null : null,
       };
 
-      await apiPost("/api/stores", storeData);
+      await apiRequest("/api/stores", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(storeData)
+      });
       toast({ title: "Store created successfully" });
       storeForm.reset();
       queryClient.invalidateQueries({ queryKey: ["/api/stores"] });
@@ -360,7 +374,11 @@ export default function ShopkeeperDashboard() {
 
   const handleOrderStatusUpdate = async (orderId: number, status: string) => {
     try {
-      await apiPut(`/api/orders/${orderId}/status`, { status });
+      await apiRequest(`/api/orders/${orderId}/status`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status })
+      });
       toast({ title: "Order status updated successfully" });
 
       // Invalidate all related queries
@@ -384,13 +402,17 @@ export default function ShopkeeperDashboard() {
 
   const handleNotifyDeliveryPartner = async (orderId: number, message: string, urgent: boolean = false) => {
     try {
-      const response = await apiPost("/api/notifications/delivery-assignment", {
-        orderId,
-        message,
-        storeId: currentStore?.id,
-        shopkeeperId: user?.id,
-        urgent,
-        notificationType: "first_accept_first_serve"
+      const response = await apiRequest("/api/notifications/delivery-assignment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId,
+          message,
+          storeId: currentStore?.id,
+          shopkeeperId: user?.id,
+          urgent,
+          notificationType: "first_accept_first_serve"
+        })
       });
 
       // Add to notification history
@@ -420,11 +442,15 @@ export default function ShopkeeperDashboard() {
 
   const handleBroadcastNotification = async (message: string, targetOrders: number[]) => {
     try {
-      await apiPost("/api/notifications/broadcast-delivery", {
-        message,
-        orderIds: targetOrders,
-        storeId: currentStore?.id,
-        shopkeeperId: user?.id
+      await apiRequest("/api/notifications/broadcast-delivery", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message,
+          orderIds: targetOrders,
+          storeId: currentStore?.id,
+          shopkeeperId: user?.id
+        })
       });
 
       toast({

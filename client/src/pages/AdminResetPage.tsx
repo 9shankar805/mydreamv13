@@ -73,17 +73,17 @@ export default function AdminResetPage() {
   const { data: allStores = [] } = useQuery({
     queryKey: ["/api/admin/stores"],
     enabled: !!adminUser,
-  });
+  }) as { data: any[] };
 
   const { data: allProducts = [] } = useQuery({
     queryKey: ["/api/admin/products"],
     enabled: !!adminUser,
-  });
+  }) as { data: any[] };
 
   const { data: allUsers = [] } = useQuery({
     queryKey: ["/api/admin/users"],
     enabled: !!adminUser,
-  });
+  }) as { data: any[] };
 
   const { data: deliveryPartners = [] } = useQuery({
     queryKey: ["/api/delivery-partners"],

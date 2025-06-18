@@ -2048,7 +2048,7 @@ export class DatabaseStorage implements IStorage {
 
       // Update password
       await db.update(adminUsers)
-        .set({ password: newPassword, updatedAt: new Date() })
+        .set({ password: newPassword })
         .where(eq(adminUsers.id, adminId));
 
       return true;

@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { useUser } from "@/hooks/use-user";
+import { useUser } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiPost, apiPut, apiDelete } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
@@ -181,7 +181,7 @@ export default function ShopkeeperDashboard() {
     refetchInterval: 30000, // Refresh every 30 seconds
   });
 
-  // Form for adding/editing products
+  // Form for adding/editing products with proper safety checks
   const form = useForm<ProductForm>({
     resolver: zodResolver(productSchema),
     defaultValues: {
@@ -189,7 +189,7 @@ export default function ShopkeeperDashboard() {
       description: "",
       price: "",
       originalPrice: "",
-      categoryId: 1,
+      categoryId: categories && categories.length > 0 ? categories[0].id : 1,
       stock: 0,
       imageUrl: "",
       images: [],

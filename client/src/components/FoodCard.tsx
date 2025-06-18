@@ -16,16 +16,16 @@ export default function FoodCard({ food }: FoodCardProps) {
   const { addToCart } = useCart();
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
-  
+
   // Safety checks for undefined properties
   if (!food) {
     return null;
   }
-  
+
   const inWishlist = user ? isInWishlist(food.id) : false;
-  const discountedPrice = food.isOnOffer && food.offerPercentage
-    ? (parseFloat(food.price || "0") * (1 - (food.offerPercentage || 0) / 100)).toFixed(2)
-    : food.price || "0";
+  const discountedPrice = food?.isOnOffer
+    ? (parseFloat(food?.price || "0") * (1 - (food?.offerPercentage || 0) / 100)).toFixed(2)
+    : food?.price || "0";
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -59,13 +59,13 @@ export default function FoodCard({ food }: FoodCardProps) {
               e.currentTarget.src = "https://images.unsplash.com/photo-1565299624946-b28f40a0ca4b?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&h=300";
             }}
           />
-          
+
           {food.isOnOffer && food.offerPercentage && (
             <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
               {food.offerPercentage}% OFF
             </Badge>
           )}
-          
+
           <div className="absolute top-2 right-2 flex space-x-1">
             {food.isVegetarian && (
               <Badge className="bg-green-500 hover:bg-green-600">
@@ -92,7 +92,7 @@ export default function FoodCard({ food }: FoodCardProps) {
             </Button>
           )}
         </div>
-        
+
         <CardContent className="p-4">
           <div className="flex items-start justify-between mb-2">
             <h3 className="font-semibold text-lg group-hover:text-red-600 transition-colors line-clamp-1">
@@ -109,11 +109,11 @@ export default function FoodCard({ food }: FoodCardProps) {
               )}
             </div>
           </div>
-          
+
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
             {food.description || "Delicious food item"}
           </p>
-          
+
           <div className="flex items-center justify-between mb-3">
             {food.preparationTime && (
               <div className="flex items-center space-x-1 text-sm text-gray-600">
@@ -121,14 +121,14 @@ export default function FoodCard({ food }: FoodCardProps) {
                 <span>{food.preparationTime}</span>
               </div>
             )}
-            
+
             {food.spiceLevel && (
               <Badge variant="outline" className="text-xs">
                 🌶️ {food.spiceLevel}
               </Badge>
             )}
           </div>
-          
+
           {food.rating && parseFloat(food.rating || "0") > 0 && (
             <div className="flex items-center space-x-1 mb-3">
               <div className="flex">
@@ -150,7 +150,7 @@ export default function FoodCard({ food }: FoodCardProps) {
               </span>
             </div>
           )}
-          
+
           {user && (
             <Button 
               onClick={handleAddToCart}

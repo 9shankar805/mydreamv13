@@ -44,7 +44,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const userData = JSON.parse(savedUser);
         setUser(userData);
-        
+
         // If user is a shopkeeper with pending status, check for updates periodically
         if (userData.role === 'shopkeeper' && userData.status !== 'active') {
           const interval = setInterval(async () => {
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               // Silently fail to avoid disrupting user experience
             }
           }, 30000); // Check every 30 seconds
-          
+
           return () => clearInterval(interval);
         }
       } catch (error) {
@@ -79,7 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { user } = await response.json();
     setUser(user);
     localStorage.setItem("user", JSON.stringify(user));
-    
+
     // Redirect delivery partners directly to their dashboard
     if (user.role === 'delivery_partner') {
       window.location.href = '/delivery-partner/dashboard';

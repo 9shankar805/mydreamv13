@@ -4,6 +4,18 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { MapPin, Navigation, Clock, Phone, Truck, AlertCircle } from 'lucide-react';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default markers in React Leaflet
+if (typeof window !== 'undefined') {
+  delete (L.Icon.Default.prototype as any)._getIconUrl;
+  L.Icon.Default.mergeOptions({
+    iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+    iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+    shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+  });
+}
 
 interface DeliveryMapProps {
   deliveryId?: number;
@@ -23,9 +35,15 @@ export default function DeliveryMap({
   onLocationUpdate 
 }: DeliveryMapProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const mapInstance = useRef<L.Map | null>(null);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
   const [userLocation, setUserLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [markers, setMarkers] = useState<{
+    pickup?: L.Marker;
+    delivery?: L.Marker;
+    current?: L.Marker;
+  }>({});
 
   // Get user's current location
   useEffect(() => {
@@ -51,14 +69,169 @@ export default function DeliveryMap({
     }
   }, [onLocationUpdate]);
 
-  // Initialize map (placeholder for now, can be enhanced with HERE Maps or Google Maps)
+  // Initialize Leaflet map
   useEffect(() => {
-    if (mapRef.current && !isMapLoaded) {
-      // For now, we'll create a visual map placeholder
-      // In production, this would initialize HERE Maps or Google Maps
+    if (!mapRef.current || mapInstance.current) return;
+
+    try {
+      // Initialize map with Siraha, Nepal as default center
+      const map = L.map(mapRef.current, {
+        center: [26.6586, 86.2003],
+        zoom: 13,
+        zoomControl: true,
+      });
+
+      // Add tile layer
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 19,
+      }).addTo(map);
+
+      mapInstance.current = map;
       setIsMapLoaded(true);
+    } catch (error) {
+      console.error('Error initializing map:', error);
+      setMapError('Failed to initialize map');
     }
-  }, [isMapLoaded]);
+
+    return () => {
+      if (mapInstance.current) {
+        mapInstance.current.remove();
+        mapInstance.current = null;
+      }
+    };
+  }, []);
+
+  // Create custom icons for different locations
+  const createCustomIcon = (type: 'pickup' | 'delivery' | 'current') => {
+    let color = '#3B82F6';
+    let icon = '📍';
+    
+    switch (type) {
+      case 'pickup':
+        color = '#10B981';
+        icon = '🏪';
+        break;
+      case 'delivery':
+        color = '#EF4444';
+        icon = '🏠';
+        break;
+      case 'current':
+        color = '#F59E0B';
+        icon = '🚚';
+        break;
+    }
+
+    return L.divIcon({
+      html: `<div style="
+        width: 30px; 
+        height: 30px; 
+        background: ${color}; 
+        border: 2px solid white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+        font-size: 14px;
+      ">${icon}</div>`,
+      iconSize: [30, 30],
+      className: 'custom-marker',
+      iconAnchor: [15, 15],
+      popupAnchor: [0, -15]
+    });
+  };
+
+  // Update markers when locations change
+  useEffect(() => {
+    if (!mapInstance.current || !isMapLoaded) return;
+
+    const map = mapInstance.current;
+    
+    // Clear existing markers
+    Object.values(markers).forEach(marker => {
+      if (marker) map.removeLayer(marker);
+    });
+
+    const newMarkers: any = {};
+    const bounds = L.latLngBounds([]);
+
+    // Add pickup location marker
+    if (pickupLocation) {
+      const pickupMarker = L.marker(
+        [pickupLocation.lat, pickupLocation.lng],
+        { icon: createCustomIcon('pickup') }
+      ).addTo(map);
+      
+      pickupMarker.bindPopup(`
+        <div style="padding: 8px; min-width: 150px;">
+          <h4 style="margin: 0 0 4px 0; color: #10B981;">🏪 Pickup Location</h4>
+          <p style="margin: 0; font-size: 12px;">${pickupLocation.address}</p>
+        </div>
+      `);
+      
+      newMarkers.pickup = pickupMarker;
+      bounds.extend([pickupLocation.lat, pickupLocation.lng]);
+    }
+
+    // Add delivery location marker
+    if (deliveryLocation) {
+      const deliveryMarker = L.marker(
+        [deliveryLocation.lat, deliveryLocation.lng],
+        { icon: createCustomIcon('delivery') }
+      ).addTo(map);
+      
+      deliveryMarker.bindPopup(`
+        <div style="padding: 8px; min-width: 150px;">
+          <h4 style="margin: 0 0 4px 0; color: #EF4444;">🏠 Delivery Location</h4>
+          <p style="margin: 0; font-size: 12px;">${deliveryLocation.address}</p>
+        </div>
+      `);
+      
+      newMarkers.delivery = deliveryMarker;
+      bounds.extend([deliveryLocation.lat, deliveryLocation.lng]);
+    }
+
+    // Add current location marker
+    if (currentLocation) {
+      const currentMarker = L.marker(
+        [currentLocation.lat, currentLocation.lng],
+        { icon: createCustomIcon('current') }
+      ).addTo(map);
+      
+      currentMarker.bindPopup(`
+        <div style="padding: 8px; min-width: 150px;">
+          <h4 style="margin: 0 0 4px 0; color: #F59E0B;">🚚 Current Location</h4>
+          <p style="margin: 0; font-size: 12px;">Live tracking position</p>
+        </div>
+      `);
+      
+      newMarkers.current = currentMarker;
+      bounds.extend([currentLocation.lat, currentLocation.lng]);
+    }
+
+    // Add route line if both pickup and delivery locations exist
+    if (pickupLocation && deliveryLocation) {
+      const routeLine = L.polyline([
+        [pickupLocation.lat, pickupLocation.lng],
+        [deliveryLocation.lat, deliveryLocation.lng]
+      ], {
+        color: '#3B82F6',
+        weight: 3,
+        opacity: 0.7,
+        dashArray: '5, 10'
+      }).addTo(map);
+      
+      bounds.extend(routeLine.getBounds());
+    }
+
+    setMarkers(newMarkers);
+
+    // Fit map to show all markers if any exist
+    if (bounds.isValid()) {
+      map.fitBounds(bounds, { padding: [20, 20] });
+    }
+  }, [pickupLocation, deliveryLocation, currentLocation, isMapLoaded]);
 
   const handleNavigate = (destination: { lat: number; lng: number; address: string }) => {
     const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}`;
@@ -117,145 +290,12 @@ export default function DeliveryMap({
             </Badge>
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0">
           <div 
             ref={mapRef}
-            className="w-full h-96 bg-gradient-to-br from-blue-50 to-indigo-100 rounded-lg border-2 border-blue-200 relative overflow-hidden"
-          >
-            {/* Map Overlay with Visual Elements */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="relative w-full h-full">
-                {/* Grid Pattern */}
-                <div className="absolute inset-0 opacity-10">
-                  <div className="grid grid-cols-8 grid-rows-6 h-full">
-                    {Array.from({ length: 48 }).map((_, i) => (
-                      <div key={i} className="border border-blue-300"></div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Location Markers */}
-                {pickupLocation && (
-                  <div 
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                    style={{ 
-                      left: '30%', 
-                      top: '40%'
-                    }}
-                  >
-                    <div className="relative">
-                      <div className="w-6 h-6 bg-green-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-green-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        Pickup
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {deliveryLocation && (
-                  <div 
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                    style={{ 
-                      left: '70%', 
-                      top: '60%'
-                    }}
-                  >
-                    <div className="relative">
-                      <div className="w-6 h-6 bg-red-500 rounded-full border-2 border-white shadow-lg animate-pulse"></div>
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-red-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        Delivery
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {(userLocation || currentLocation) && (
-                  <div 
-                    className="absolute transform -translate-x-1/2 -translate-y-1/2"
-                    style={{ 
-                      left: '50%', 
-                      top: '50%'
-                    }}
-                  >
-                    <div className="relative">
-                      <div className="w-5 h-5 bg-blue-500 rounded-full border-2 border-white shadow-lg">
-                        <div className="absolute inset-0 bg-blue-500 rounded-full animate-ping opacity-75"></div>
-                      </div>
-                      <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        You
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Route Lines */}
-                {pickupLocation && deliveryLocation && (
-                  <div className="absolute inset-0">
-                    <svg className="w-full h-full">
-                      <defs>
-                        <pattern id="dash" patternUnits="userSpaceOnUse" width="8" height="8">
-                          <rect width="4" height="8" fill="#3B82F6" />
-                        </pattern>
-                      </defs>
-                      <path
-                        d="M 30% 40% Q 50% 30% 70% 60%"
-                        stroke="#3B82F6"
-                        strokeWidth="3"
-                        strokeDasharray="5,5"
-                        fill="none"
-                        className="animate-pulse"
-                      />
-                    </svg>
-                  </div>
-                )}
-
-                {/* Map Info */}
-                <div className="absolute top-4 left-4 bg-white/80 backdrop-blur-sm rounded-lg p-3">
-                  <div className="text-sm font-medium text-gray-700">Live Tracking</div>
-                  <div className="text-xs text-gray-500">
-                    {userLocation ? 
-                      `${userLocation.lat.toFixed(4)}, ${userLocation.lng.toFixed(4)}` : 
-                      'Getting location...'
-                    }
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Map Controls */}
-          <div className="flex gap-2 mt-4">
-            <Button 
-              onClick={handleUpdateLocation}
-              size="sm"
-              variant="outline"
-            >
-              <MapPin className="h-4 w-4 mr-2" />
-              Update Location
-            </Button>
-            
-            {pickupLocation && (
-              <Button 
-                onClick={() => handleNavigate(pickupLocation)}
-                size="sm"
-                variant="outline"
-              >
-                <Navigation className="h-4 w-4 mr-2" />
-                Navigate to Pickup
-              </Button>
-            )}
-            
-            {deliveryLocation && (
-              <Button 
-                onClick={() => handleNavigate(deliveryLocation)}
-                size="sm"
-                variant="outline"
-              >
-                <Navigation className="h-4 w-4 mr-2" />
-                Navigate to Delivery
-              </Button>
-            )}
-          </div>
+            className="w-full h-96 rounded-b-lg"
+            style={{ minHeight: '400px' }}
+          />
         </CardContent>
       </Card>
 

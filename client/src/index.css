@@ -1,9 +1,9 @@
+/* Leaflet CSS for maps */
+@import 'leaflet/dist/leaflet.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Leaflet CSS for maps */
-@import 'leaflet/dist/leaflet.css';
 
 @layer utilities {
   /* Border Radius Utilities */

@@ -755,7 +755,7 @@ export class DatabaseStorage implements IStorage {
     if (page) {
       return await db.select().from(websiteVisits).where(eq(websiteVisits.page, page)).orderBy(desc(websiteVisits.visitedAt));
     }
-    return await db.select().fromwebsiteVisits).orderBy(desc(websiteVisits.visitedAt));
+    return await db.select().from(websiteVisits).orderBy(desc(websiteVisits.visitedAt));
   }
 
   // Notifications

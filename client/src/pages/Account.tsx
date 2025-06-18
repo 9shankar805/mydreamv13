@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Phone, MapPin, Calendar, ShoppingBag, Store, Settings, Edit, Clock, AlertCircle, Check } from "lucide-react";
+import { User, Mail, Phone, MapPin, Calendar, ShoppingBag, Store, Settings, Edit, Clock, AlertCircle, Check, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import type { Order } from "@shared/schema";
 
@@ -346,6 +346,70 @@ export default function Account() {
               </CardContent>
             </Card>
           )}
+
+          {/* Account Settings & Danger Zone */}
+          <Card className="border-red-200">
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2 text-red-800">
+                <Settings className="h-5 w-5" />
+                <span>Account Settings</span>
+              </CardTitle>
+              <CardDescription>
+                Manage your account preferences and security
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Account Actions */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Change Password</h4>
+                    <p className="text-sm text-muted-foreground">Update your account password for security</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Settings className="h-4 w-4 mr-2" />
+                    Change Password
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div>
+                    <h4 className="font-medium">Email Preferences</h4>
+                    <p className="text-sm text-muted-foreground">Manage your notification settings</p>
+                  </div>
+                  <Button variant="outline" size="sm">
+                    <Mail className="h-4 w-4 mr-2" />
+                    Manage
+                  </Button>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Danger Zone */}
+              <div className="space-y-4">
+                <div className="flex items-center space-x-2 text-red-600">
+                  <AlertCircle className="h-5 w-5" />
+                  <h4 className="font-medium">Danger Zone</h4>
+                </div>
+                
+                <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div>
+                    <h4 className="font-medium text-red-800">Delete Account</h4>
+                    <p className="text-sm text-red-700">
+                      Permanently delete your account and all associated data. This action cannot be undone.
+                    </p>
+                  </div>
+                  <Link href="/delete-account">
+                    <Button variant="destructive" size="sm">
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Account
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>

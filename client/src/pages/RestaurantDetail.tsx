@@ -90,127 +90,139 @@ export default function RestaurantDetail() {
           </Link>
         </div>
 
-        {/* Restaurant Cover Image */}
-        {restaurant.coverImage && (
-          <div className="w-full h-48 md:h-64 bg-gray-200 rounded-lg mb-6 overflow-hidden">
-            <img
-              src={restaurant.coverImage}
-              alt={`${restaurant.name} cover`}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.currentTarget.src = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400";
-              }}
-            />
-          </div>
-        )}
+        
 
         {/* Restaurant Header */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center space-y-4 md:space-y-0 md:space-x-6">
-              {/* Restaurant Logo */}
-              <div className="w-32 h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0">
+        <Card className="mb-8 overflow-hidden">
+          <CardContent className="p-0">
+            {/* Restaurant Banner */}
+            {restaurant.coverImage && (
+              <div className="w-full h-32 sm:h-40 md:h-48 bg-gray-200 overflow-hidden">
                 <img
-                  src={restaurant.logo || "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200"}
-                  alt={restaurant.name}
+                  src={restaurant.coverImage}
+                  alt={`${restaurant.name} banner`}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200";
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&h=400";
                   }}
                 />
               </div>
-
-              {/* Restaurant Info */}
-              <div className="flex-1">
-                <h1 className="text-2xl font-bold text-foreground mb-2">{restaurant.name}</h1>
-                
-                <div className="flex items-center mb-3">
-                  <div className="flex text-yellow-400 mr-2">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`h-4 w-4 ${
-                          i < Math.floor(Number(restaurant.rating)) ? "fill-current" : ""
-                        }`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-muted-foreground">
-                    {restaurant.rating} ({restaurant.totalReviews} reviews)
-                  </span>
-                  <Badge variant="secondary" className="ml-3">
-                    {restaurant.isActive ? "Open" : "Closed"}
-                  </Badge>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-muted-foreground mb-4">
-                  <div className="flex items-center">
-                    <MapPin className="h-4 w-4 mr-2" />
-                    <span>{restaurant.address}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Clock className="h-4 w-4 mr-2" />
-                    <span>{restaurant.deliveryTime || "25-35 mins"}</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Bike className="h-4 w-4 mr-2" />
-                    <span>Delivery: {deliveryFee}</span>
-                  </div>
-                  {minimumOrder && (
-                    <div className="flex items-center">
-                      <span>Min order: {minimumOrder}</span>
-                    </div>
-                  )}
-                  {restaurant.phone && (
-                    <div className="flex items-center">
-                      <Phone className="h-4 w-4 mr-2" />
-                      <span>{restaurant.phone}</span>
-                    </div>
-                  )}
-                </div>
-
-                {restaurant.description && (
-                  <p className="text-muted-foreground mb-4">{restaurant.description}</p>
-                )}
-
-                {restaurant.cuisineType && (
-                  <Badge variant="outline" className="mr-2">
-                    {restaurant.cuisineType}
-                  </Badge>
-                )}
-                
-                {restaurant.isDeliveryAvailable && (
-                  <Badge className="bg-green-500 hover:bg-green-600">
-                    <Bike className="h-3 w-3 mr-1" />
-                    Delivery Available
-                  </Badge>
-                )}
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col space-y-3 w-full md:w-auto">
-                {restaurant.phone && (
-                  <Button 
-                    className="btn-primary"
-                    onClick={() => window.open(`tel:${restaurant.phone}`, '_self')}
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Call Restaurant
-                  </Button>
-                )}
-                
-                {restaurant.latitude && restaurant.longitude && (
-                  <Button 
-                    variant="outline"
-                    onClick={() => {
-                      const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${restaurant.latitude},${restaurant.longitude}`;
-                      window.open(mapsUrl, '_blank');
+            )}
+            
+            <div className="p-4 sm:p-6">
+              <div className="flex flex-col sm:flex-row gap-4">
+                {/* Restaurant Logo */}
+                <div className="w-20 h-20 sm:w-24 sm:h-24 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden flex-shrink-0 mx-auto sm:mx-0">
+                  <img
+                    src={restaurant.logo || "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200"}
+                    alt={restaurant.name}
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://images.unsplash.com/photo-1578662996442-48f60103fc96?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&h=200";
                     }}
-                  >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    Get Directions
-                  </Button>
-                )}
+                  />
+                </div>
+
+                {/* Restaurant Info */}
+                <div className="flex-1 text-center sm:text-left">
+                  <h1 className="text-xl sm:text-2xl font-bold text-foreground mb-2">{restaurant.name}</h1>
+                  
+                  <div className="flex items-center justify-center sm:justify-start mb-3">
+                    <div className="flex text-yellow-400 mr-2">
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <Star
+                          key={i}
+                          className={`h-4 w-4 ${
+                            i < Math.floor(Number(restaurant.rating)) ? "fill-current" : ""
+                          }`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-muted-foreground text-sm">
+                      {restaurant.rating} ({restaurant.totalReviews} reviews)
+                    </span>
+                    <Badge variant="secondary" className="ml-3">
+                      {restaurant.isActive ? "Open" : "Closed"}
+                    </Badge>
+                  </div>
+
+                  {restaurant.description && (
+                    <p className="text-muted-foreground text-sm mb-3 line-clamp-2">{restaurant.description}</p>
+                  )}
+
+                  <div className="flex flex-wrap gap-2 justify-center sm:justify-start mb-4">
+                    {restaurant.cuisineType && (
+                      <Badge variant="outline" className="text-xs">
+                        {restaurant.cuisineType}
+                      </Badge>
+                    )}
+                    {restaurant.isDeliveryAvailable && (
+                      <Badge className="bg-green-500 hover:bg-green-600 text-xs">
+                        <Bike className="h-3 w-3 mr-1" />
+                        Delivery Available
+                      </Badge>
+                    )}
+                  </div>
+
+                  {/* Restaurant Details Grid */}
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground mb-4">
+                    <div className="flex items-center justify-center sm:justify-start">
+                      <Clock className="h-3 w-3 mr-1" />
+                      <span>{restaurant.deliveryTime || "25-35 mins"}</span>
+                    </div>
+                    <div className="flex items-center justify-center sm:justify-start">
+                      <Bike className="h-3 w-3 mr-1" />
+                      <span>{deliveryFee}</span>
+                    </div>
+                    {minimumOrder && (
+                      <div className="flex items-center justify-center sm:justify-start col-span-2">
+                        <span>Min order: {minimumOrder}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center justify-center sm:justify-start">
+                      <MapPin className="h-3 w-3 mr-1 flex-shrink-0" />
+                      <span className="line-clamp-1">{restaurant.address}</span>
+                    </div>
+                    {restaurant.phone && (
+                      <div className="flex items-center justify-center sm:justify-start">
+                        <Phone className="h-3 w-3 mr-1 flex-shrink-0" />
+                        <span>{restaurant.phone}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex flex-row sm:flex-col gap-2 sm:gap-3 w-full sm:w-auto justify-center">
+                  {restaurant.phone && (
+                    <Button 
+                      size="sm"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => window.open(`tel:${restaurant.phone}`, '_self')}
+                    >
+                      <Phone className="h-4 w-4 mr-2" />
+                      Call
+                    </Button>
+                  )}
+                  
+                  {restaurant.latitude && restaurant.longitude && (
+                    <Button 
+                      size="sm"
+                      variant="outline"
+                      className="flex-1 sm:flex-none"
+                      onClick={() => {
+                        const mapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${restaurant.latitude},${restaurant.longitude}`;
+                        window.open(mapsUrl, '_blank');
+                      }}
+                    >
+                      <MapPin className="h-4 w-4 mr-2" />
+                      Directions
+                    </Button>
+                  )}
+                </div>
               </div>
             </div>
           </CardContent>

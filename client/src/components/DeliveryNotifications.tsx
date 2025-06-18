@@ -58,9 +58,11 @@ export default function DeliveryNotifications({ deliveryPartnerId }: { deliveryP
       const allNotifications = await response.json();
       console.log('All delivery notifications:', allNotifications);
 
-      // Show all available orders (not filtered by delivery partner)
+      // Filter notifications for delivery partners only - show available orders
+      // Only show notifications that are either unassigned or specifically for this delivery partner
       return allNotifications.filter((notification: DeliveryNotification) => 
-        notification.status === 'pending'
+        notification.status === 'pending' && 
+        (notification.delivery_partner_id === null || notification.delivery_partner_id === deliveryPartnerId)
       );
     },
     enabled: !!deliveryPartnerId,

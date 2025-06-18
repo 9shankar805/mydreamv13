@@ -86,13 +86,23 @@ export function useNotifications() {
     if (!user?.id) return;
 
     try {
-      const response = await fetch(`/api/notifications/user/${user.id}`);
+      const response = await fetch(`/api/notifications/user/${user.id}`, {
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
       if (response.ok) {
         const data = await response.json();
         
+        // Filter notifications by user ID and role to ensure proper targeting
+        const userNotifications = data.filter((n: NotificationData) => 
+          n.userId === user.id
+        );
+        
         // Check for new notifications and play sound
         const previousNotificationIds = notifications.map(n => n.id);
-        const newNotifications = data.filter((n: NotificationData) => 
+        const newNotifications = userNotifications.filter((n: NotificationData) => 
           !previousNotificationIds.includes(n.id) && !n.isRead
         );
         
@@ -135,8 +145,8 @@ export function useNotifications() {
           });
         }
         
-        setNotifications(data);
-        setUnreadCount(data.filter((n: NotificationData) => !n.isRead).length);
+        setNotifications(userNotifications);
+        setUnreadCount(userNotifications.filter((n: NotificationData) => !n.isRead).length);
       }
     } catch (error) {
       console.error('Error fetching notifications:', error);

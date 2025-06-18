@@ -34,11 +34,15 @@ export class NotificationService {
     for (const item of orderItems) {
       const store = await storage.getStore(item.storeId);
       if (store) {
-        storeOwners.add(store.ownerId);
+        // Verify the store owner has shopkeeper role
+        const storeOwner = await storage.getUserById(store.ownerId);
+        if (storeOwner && storeOwner.role === 'shopkeeper') {
+          storeOwners.add(store.ownerId);
+        }
       }
     }
 
-    // Send notifications to each store owner
+    // Send notifications to each verified store owner
     for (const ownerId of Array.from(storeOwners)) {
       await this.sendNotification({
         userId: ownerId,
@@ -60,40 +64,48 @@ export class NotificationService {
 
   // Send delivery assignment notification to delivery partner
   static async sendDeliveryAssignmentNotification(deliveryPartnerId: number, orderId: number, pickupAddress: string, deliveryAddress: string) {
-    await this.sendNotification({
-      userId: deliveryPartnerId,
-      type: 'delivery',
-      title: 'New Delivery Assignment',
-      message: `You have been assigned a new delivery from ${pickupAddress} to ${deliveryAddress}`,
-      orderId,
-      data: {
-        pickupAddress,
-        deliveryAddress
-      }
-    });
+    // Verify the user is a delivery partner
+    const deliveryPartner = await storage.getUserById(deliveryPartnerId);
+    if (deliveryPartner && deliveryPartner.role === 'delivery_partner') {
+      await this.sendNotification({
+        userId: deliveryPartnerId,
+        type: 'delivery',
+        title: 'New Delivery Assignment',
+        message: `You have been assigned a new delivery from ${pickupAddress} to ${deliveryAddress}`,
+        orderId,
+        data: {
+          pickupAddress,
+          deliveryAddress
+        }
+      });
+    }
   }
 
   // Send order status update to customer
   static async sendOrderStatusUpdateToCustomer(customerId: number, orderId: number, status: string, description?: string) {
-    const statusMessages: { [key: string]: string } = {
-      'processing': 'Your order is now being processed',
-      'shipped': 'Your order has been shipped',
-      'out_for_delivery': 'Your order is out for delivery',
-      'delivered': 'Your order has been delivered',
-      'cancelled': 'Your order has been cancelled'
-    };
+    // Verify the user is a customer
+    const customer = await storage.getUserById(customerId);
+    if (customer && customer.role === 'customer') {
+      const statusMessages: { [key: string]: string } = {
+        'processing': 'Your order is now being processed',
+        'shipped': 'Your order has been shipped',
+        'out_for_delivery': 'Your order is out for delivery',
+        'delivered': 'Your order has been delivered',
+        'cancelled': 'Your order has been cancelled'
+      };
 
-    await this.sendNotification({
-      userId: customerId,
-      type: 'order',
-      title: 'Order Status Update',
-      message: statusMessages[status] || `Your order status has been updated to ${status}`,
-      orderId,
-      data: {
-        status,
-        description
-      }
-    });
+      await this.sendNotification({
+        userId: customerId,
+        type: 'order',
+        title: 'Order Status Update',
+        message: statusMessages[status] || `Your order status has been updated to ${status}`,
+        orderId,
+        data: {
+          status,
+          description
+        }
+      });
+    }
   }
 
   // Send product low stock alert to shopkeeper

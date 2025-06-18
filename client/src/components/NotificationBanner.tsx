@@ -22,11 +22,14 @@ export default function NotificationBanner() {
   const [lastNotificationId, setLastNotificationId] = useState<number | null>(null);
 
   // Fetch notifications
-  const { data: notifications = [] } = useQuery({
+  const { data: allNotifications = [] } = useQuery({
     queryKey: [`/api/notifications/user/${user?.id}`],
     enabled: !!user?.id,
     refetchInterval: 5000, // Check for new notifications every 5 seconds
   }) as { data: Notification[] };
+
+  // Filter notifications for current user only
+  const notifications = allNotifications.filter(n => n.userId === user?.id);
 
   // Check for new notifications
   useEffect(() => {

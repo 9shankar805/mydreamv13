@@ -161,7 +161,7 @@ export function useNotifications() {
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
-  }, [user?.id, notifications]);
+  }, [user?.id]);
 
   // Mark notification as read
   const markAsRead = async (notificationId: number) => {
@@ -205,7 +205,7 @@ export function useNotifications() {
 
     fetchNotifications();
 
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
+    const interval = setInterval(fetchNotifications, 60000); // Poll every 60 seconds to reduce load
     return () => clearInterval(interval);
   }, [user?.id, fetchNotifications]);
 

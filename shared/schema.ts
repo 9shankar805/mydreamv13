@@ -557,8 +557,8 @@ export const adminLogs = pgTable("admin_logs", {
   id: serial("id").primaryKey(),
   adminId: integer("admin_id").references(() => adminUsers.id).notNull(),
   action: text("action").notNull(),
-  resourceType: text("resource_type").notNull(), // user, product, order, etc.
-  resourceId: integer("resource_id"),
+  targetType: text("target_type"), // user, product, order, etc.
+  targetId: integer("target_id"),
   details: text("details"),
   ipAddress: text("ip_address"),
   userAgent: text("user_agent"),

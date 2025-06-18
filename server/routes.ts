@@ -494,9 +494,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "delete_product",
-        resourceType: "product",
-        resourceId: id,
-        description: `Deleted product with ID ${id}`
+        targetType: "product",
+        targetId: id,
+        details: `Deleted product with ID ${id}`
       });
 
       const deleted = await storage.deleteProduct(id);
@@ -524,8 +524,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "bulk_delete_products",
-        resourceType: "product",
-        description: `Bulk deleted ${productIds.length} products`
+        targetType: "product",
+        details: `Bulk deleted ${productIds.length} products`
       });
 
       const deleteResults = await Promise.all(
@@ -3950,9 +3950,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "create_delivery_zone",
-        resourceType: "delivery_zone",
-        resourceId: zone.id,
-        description: `Created delivery zone: ${zone.name}`
+        targetType: "delivery_zone",
+        targetId: zone.id,
+        details: `Created delivery zone: ${zone.name}`
       });
 
       res.json({ success: true, zone, message: "Delivery zone created successfully" });

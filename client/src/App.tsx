@@ -3,7 +3,8 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { AuthProvider, useAuth } from "./hooks/useAuth";
+import { AuthProvider } from "./hooks/useAuth";
+import { useUser } from './hooks/use-user';
 import { CartProvider } from "./hooks/useCart";
 import { WishlistProvider } from "./hooks/useWishlist";
 import { AppModeProvider, useAppMode } from "./hooks/useAppMode";
@@ -129,7 +130,7 @@ function AppRouter() {
 }
 
 function AppContent() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading } = useUser();
   const { mode } = useAppMode();
 
   // Professional notification system initialization

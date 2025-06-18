@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useAuth } from './useAuth';
+import { useUser } from './use-user';
 import { useToast } from './use-toast';
 
 export interface NotificationData {
@@ -18,7 +18,7 @@ export function useNotifications() {
   const [isSupported, setIsSupported] = useState(false);
   const [notifications, setNotifications] = useState<NotificationData[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
-  const { user } = useAuth();
+  const { user } = useUser();
   const { toast } = useToast();
     const [isLoading, setIsLoading] = useState(false);
   const [notificationSettings, setNotificationSettings] = useState({
@@ -91,7 +91,7 @@ export function useNotifications() {
   };
 
   // Fetch notifications from server
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     if (!user?.id) return;
 
     try {
@@ -161,7 +161,7 @@ export function useNotifications() {
     } catch (error) {
       console.error('Error fetching notifications:', error);
     }
-  };
+  }, [user?.id, notifications]);
 
   // Mark notification as read
   const markAsRead = async (notificationId: number) => {
@@ -207,7 +207,7 @@ export function useNotifications() {
 
     const interval = setInterval(fetchNotifications, 30000); // Poll every 30 seconds
     return () => clearInterval(interval);
-  }, [user?.id]);
+  }, [user?.id, fetchNotifications]);
 
   // Show new notification when received
   const showNewNotification = (notification: NotificationData) => {
@@ -358,22 +358,6 @@ export function useNotifications() {
       console.error('Error in notification handler:', error);
     }
   };
-
-  // Subscribe to role-based notifications
-  useEffect(() => {
-    if (!user?.id || !user?.role) return;
-
-    const interval = setInterval(() => {
-      fetchNotifications();
-    }, 3000); // Poll every 3 seconds
-
-    // Initial fetch
-    fetchNotifications();
-
-    return () => clearInterval(interval);
-  }, [user?.id, user?.role]);
-
-
 
   const clearNotification = (notificationId: number) => {
     setNotifications(prev => 

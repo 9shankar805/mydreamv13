@@ -410,39 +410,6 @@ export function useNotifications() {
     }
   }, [notificationSettings.soundEnabled]);
 
-  const markAsRead = async (notificationId: number) => {
-    try {
-       // Assuming apiRequest is a function for making API requests
-      const response = await fetch(`/api/notifications/${notificationId}/read`, {
-        method: 'PUT'
-      });
-      if (response.ok) {
-                setNotifications(prev =>
-                    prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
-                );
-                setUnreadCount(prev => Math.max(0, prev - 1));
-            }
-    } catch (error) {
-      console.error('Error marking notification as read:', error);
-    }
-  };
-
-  const markAllAsRead = async () => {
-    if (!user?.id) return;
-
-    try {
-       const response = await fetch(`/api/notifications/user/${user.id}/read-all`, {
-            method: 'PUT'
-        });
-         if (response.ok) {
-                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
-                setUnreadCount(0);
-            }
-    } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-    }
-  };
-
   const clearNotification = (notificationId: number) => {
     setNotifications(prev => 
       prev.filter(notif => notif.id !== notificationId)

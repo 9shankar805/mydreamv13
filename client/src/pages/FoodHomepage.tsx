@@ -4,7 +4,7 @@ import { ArrowRight, Star, Clock, TrendingUp, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import FoodCard from "@/components/FoodCard";
 import RestaurantCard from "@/components/RestaurantCard";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/use-user";
 import type { Product, Store } from "@shared/schema";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
@@ -13,7 +13,7 @@ import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 
 export default function FoodHomepage() {
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const { data: foodItems } = useQuery<Product[]>({
     queryKey: ["/api/products"],

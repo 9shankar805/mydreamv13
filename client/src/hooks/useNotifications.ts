@@ -106,19 +106,25 @@ export function useNotifications() {
           !previousNotificationIds.includes(n.id) && !n.isRead
         );
         
-        // Play sound for new notifications
+        // Handle new notifications professionally
         if (newNotifications.length > 0) {
-          newNotifications.forEach((notification: NotificationData) => {
-            // Play sound for approval notifications immediately
-            const isApprovalNotification = notification.title.includes('Approved') || 
-                                         notification.message.includes('approved');
+          // Only play sound for the most recent notification to avoid spam
+          const latestNotification = newNotifications[0];
+          playNotificationSound(latestNotification);
+          
+          // Show desktop notification for important updates
+          if ('Notification' in window && Notification.permission === 'granted') {
+            const isImportant = latestNotification.title.includes('Approved') || 
+                               latestNotification.message.includes('approved') ||
+                               latestNotification.type === 'delivery_assignment';
             
-            if (isApprovalNotification) {
-              try {
-                const audio = new Audio('/notification.mp3');
-                audio.volume = 0.8;
-                audio.play().then(() => {
-                  console.log('Approval notification sound played');
+            if (isImportant) {
+              new Notification(latestNotification.title, {
+                body: latestNotification.message,
+                icon: '/favicon.ico',
+                tag: `important-${latestNotification.id}`,
+                requireInteraction: true,
+                vibrate: [300, 200, 300]
                   
                   // Play celebratory second sound
                   setTimeout(() => {
@@ -205,37 +211,128 @@ export function useNotifications() {
     setNotifications(prev => [notification, ...prev]);
     setUnreadCount(prev => prev + 1);
     
-    // Play notification sound - higher volume for approval notifications
+    // Professional notification sound handling
+    playNotificationSound(notification);
+    
+    // Show browser notification with proper mobile support
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const notificationOptions = {
+        body: notification.message,
+        icon: '/favicon.ico',
+        badge: '/favicon.ico',
+        tag: `notification-${notification.id}`,
+        requireInteraction: false,
+        silent: false,
+        vibrate: [200, 100, 200], // Mobile vibration pattern
+        data: {
+          id: notification.id,
+          userId: notification.userId,
+          timestamp: Date.now()
+        }
+      };
+
+      const browserNotification = new Notification(notification.title, notificationOptions);
+      
+      browserNotification.onclick = () => {
+        window.focus();
+        markAsRead(notification.id);
+        browserNotification.close();
+      };
+
+      // Auto close after 5 seconds
+      setTimeout(() => {
+        browserNotification.close();
+      }, 5000);
+    }
+  };
+
+  // Professional sound handling with mobile support
+  const playNotificationSound = (notification: NotificationData) => {
+    // Prevent multiple sounds playing simultaneously
+    if (isPlayingSound) return;
+    
+    setIsPlayingSound(true);
+    
     try {
       const audio = new Audio('/notification.mp3');
-      // Check if this is an approval notification for louder sound
-      const isApprovalNotification = notification.title.includes('Approved') || 
-                                   notification.message.includes('approved') ||
-                                   (notification.data && JSON.parse(notification.data)?.playSound);
       
-      audio.volume = isApprovalNotification ? 0.8 : 0.6;
+      // Professional volume levels
+      const isImportantNotification = notification.title.includes('Approved') || 
+                                    notification.message.includes('approved') ||
+                                    notification.type === 'delivery_assignment';
       
-      audio.play().then(() => {
-        console.log('Notification sound played successfully');
-        
-        // For approval notifications, play a second celebratory beep
-        if (isApprovalNotification) {
-          setTimeout(() => {
-            const celebraryAudio = new Audio('/notification.mp3');
-            celebraryAudio.volume = 0.5;
-            celebraryAudio.play().catch(() => {
-              console.log('Could not play celebratory sound');
-            });
-          }, 500);
+      audio.volume = isImportantNotification ? 0.7 : 0.5;
+      
+      // Mobile-friendly audio handling
+      audio.preload = 'auto';
+      
+      // Handle mobile audio restrictions
+      const playAudio = () => {
+        audio.play()
+          .then(() => {
+            console.log('Professional notification sound played');
+          })
+          .catch((error) => {
+            console.log('Audio playback restricted (mobile):', error);
+            // Fallback to vibration on mobile
+            if ('vibrate' in navigator) {
+              navigator.vibrate([200, 100, 200]);
+            }
+          })
+          .finally(() => {
+            setTimeout(() => setIsPlayingSound(false), 1000);
+          });
+      };
+
+      // For mobile, we need user interaction first
+      if (isMobileDevice()) {
+        // Store the notification to play sound on next user interaction
+        sessionStorage.setItem('pendingNotificationSound', 'true');
+        // Use vibration instead for immediate feedback
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200]);
         }
-      }).catch(() => {
-        console.log('Could not play notification sound');
-      });
+        setIsPlayingSound(false);
+      } else {
+        playAudio();
+      }
+      
     } catch (error) {
       console.log('Error playing notification sound:', error);
+      setIsPlayingSound(false);
     }
-    
-    // Show browser notification
+  };
+
+  // Detect mobile device
+  const isMobileDevice = () => {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+  };
+
+  // Play pending sounds on user interaction (mobile)
+  useEffect(() => {
+    const handleUserInteraction = () => {
+      if (sessionStorage.getItem('pendingNotificationSound')) {
+        const audio = new Audio('/notification.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => {
+          console.log('Could not play pending notification sound');
+        });
+        sessionStorage.removeItem('pendingNotificationSound');
+      }
+    };
+
+    // Listen for user interactions on mobile
+    document.addEventListener('touchstart', handleUserInteraction, { once: true });
+    document.addEventListener('click', handleUserInteraction, { once: true });
+
+    return () => {
+      document.removeEventListener('touchstart', handleUserInteraction);
+      document.removeEventListener('click', handleUserInteraction);
+    };
+  }, []);
+
+  // Add state for sound management
+  const [isPlayingSound, setIsPlayingSound] = useState(false);ion
     showNotification(notification.title, {
       body: notification.message,
       tag: `notification-${notification.id}`

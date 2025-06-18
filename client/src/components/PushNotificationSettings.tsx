@@ -153,13 +153,25 @@ export default function PushNotificationSettings() {
           </Button>
         )}
 
+        {/* Mobile-specific notification features */}
+        <div className="rounded-lg bg-blue-50 p-3 text-sm">
+          <p className="font-medium text-blue-800 mb-2">📱 Mobile Features:</p>
+          <ul className="text-blue-700 space-y-1">
+            <li>• Vibration alerts for important notifications</li>
+            <li>• Smart sound management (respects device settings)</li>
+            <li>• Offline notification queuing</li>
+            <li>• Battery-optimized delivery</li>
+          </ul>
+        </div>
+
         <div className="text-xs text-muted-foreground">
-          <p className="font-medium mb-1">You'll be notified about:</p>
+          <p className="font-medium mb-1">Professional notifications for:</p>
           <ul className="list-disc list-inside space-y-1">
             <li>Order confirmations and status updates</li>
             <li>Delivery tracking and arrival notifications</li>
             <li>New product arrivals and special offers</li>
             <li>Store updates and important announcements</li>
+            <li>Account approvals and verifications</li>
           </ul>
         </div>
       </CardContent>

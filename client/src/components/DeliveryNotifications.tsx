@@ -134,38 +134,70 @@ export default function DeliveryNotifications({ deliveryPartnerId }: { deliveryP
     }
   });
 
-  // Play notification sound when new orders arrive
+  // Professional notification handling for delivery partners
   useEffect(() => {
     if (notifications.length > previousCount && previousCount > 0) {
-      // Play notification sound
-      try {
-        console.log('Playing notification sound for new delivery orders...');
-        const audio = new Audio('/notification.mp3');
-        audio.volume = 0.7;
+      const newNotifications = notifications.slice(0, notifications.length - previousCount);
+      
+      // Show professional notification for new delivery orders
+      if (newNotifications.length > 0) {
+        const latestNotification = newNotifications[0];
+        
+        // Professional mobile-friendly notification
+        if ('Notification' in window && Notification.permission === 'granted') {
+          const notification = new Notification('🚚 New Delivery Order', {
+            body: `Pickup: ${latestNotification.pickupAddress}\nDelivery: ${latestNotification.deliveryAddress}`,
+            icon: '/favicon.ico',
+            badge: '/favicon.ico',
+            tag: 'delivery-order',
+            requireInteraction: true,
+            vibrate: [300, 200, 300, 200, 300],
+            actions: [
+              { action: 'accept', title: 'Accept Order' },
+              { action: 'view', title: 'View Details' }
+            ]
+          });
 
-        audio.addEventListener('canplaythrough', () => {
-          console.log('Delivery notification audio ready');
-        });
+          notification.onclick = () => {
+            window.focus();
+            notification.close();
+          };
+        }
 
-        audio.addEventListener('error', (e) => {
-          console.error('Delivery notification audio error:', e);
-        });
+        // Professional sound with mobile support
+        try {
+          const audio = new Audio('/notification.mp3');
+          audio.volume = 0.6;
+          
+          const playSound = () => {
+            audio.play()
+              .then(() => console.log('Delivery notification sound played'))
+              .catch(() => {
+                // Mobile fallback - vibration
+                if ('vibrate' in navigator) {
+                  navigator.vibrate([300, 200, 300]);
+                }
+              });
+          };
 
-        audio.play().then(() => {
-          console.log('Delivery notification sound played successfully');
-        }).catch((error) => {
-          console.log('Could not play delivery notification sound:', error);
-          // Fallback to system notification
-          if (Notification.permission === 'granted') {
-            new Notification('New Delivery Order Available!', {
-              body: 'Check your dashboard for new delivery opportunities',
-              icon: '/favicon.ico'
-            });
+          // Handle mobile audio restrictions
+          if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            // On mobile, store intent to play sound
+            document.addEventListener('touchstart', () => {
+              playSound();
+            }, { once: true });
+            
+            // Use vibration for immediate feedback
+            if ('vibrate' in navigator) {
+              navigator.vibrate([300, 200, 300]);
+            }
+          } else {
+            playSound();
           }
-        });
-      } catch (error) {
-        console.log('Could not play notification sound');
-      }
+          
+        } catch (error) {
+          console.log('Could not play notification sound:', error);
+        }
 
       toast({
         title: "🚚 New Orders Available!",

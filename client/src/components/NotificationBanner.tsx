@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { X, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,7 +35,7 @@ export default function NotificationBanner() {
     if (!notifications.length) return;
 
     const latestNotification = notifications[0];
-    
+
     // If there's a new notification (different from the last one we showed)
     if (latestNotification && latestNotification.id !== lastNotificationId && !latestNotification.isRead) {
       setVisibleNotifications(prev => {
@@ -55,12 +54,12 @@ export default function NotificationBanner() {
         // Check if this is an approval notification for louder sound
         const isApprovalNotification = latestNotification.title.includes('Approved') || 
                                      latestNotification.message.includes('approved');
-        
+
         audio.volume = isApprovalNotification ? 0.8 : 0.6;
-        
+
         audio.play().then(() => {
           console.log('Notification banner sound played successfully');
-          
+
           // For approval notifications, play a second celebratory beep
           if (isApprovalNotification) {
             setTimeout(() => {

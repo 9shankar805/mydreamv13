@@ -9,7 +9,7 @@ async function testPasswordChange() {
     
     // Step 1: Login as admin to get session
     console.log('1. Logging in as admin...');
-    const loginResponse = await fetch(`${baseURL}/api/auth/admin/login`, {
+    const loginResponse = await fetch(`${baseURL}/api/admin/login`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -53,7 +53,7 @@ async function testPasswordChange() {
       
       // Step 3: Test login with new password
       console.log('\n3. Testing login with new password...');
-      const newLoginResponse = await fetch(`${baseURL}/api/auth/admin/login`, {
+      const newLoginResponse = await fetch(`${baseURL}/api/admin/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

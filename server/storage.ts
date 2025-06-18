@@ -2078,10 +2078,10 @@ export class DatabaseStorage implements IStorage {
           .limit(1);
 
         if (admin) {
-          console.log('Found admin in adminUsers:', admin.email, 'Active:', admin.isActive);
+          console.log('Found admin in adminUsers:', admin.email);
 
-          // Check if admin is active and password matches
-          if (admin.isActive && admin.password === password) {
+          // Check if password matches
+          if (admin.password === password) {
             console.log('Authentication successful');
             return admin;
           }

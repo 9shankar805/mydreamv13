@@ -891,7 +891,7 @@ export class DatabaseStorage implements IStorage {
       let allStores = await db.select().from(stores);
 
       if (storeType) {
-        allStores = allStores.filter(store => store.type === storeType);
+        allStores = allStores.filter(store => store.storeType === storeType);
       }
 
       const storesWithDistance = allStores.map((store) => {

@@ -43,7 +43,7 @@ export function useNotifications() {
     try {
       const result = await Notification.requestPermission();
       setPermission(result);
-      
+
       if (result === 'granted') {
         toast({
           title: "Notifications Enabled",
@@ -94,63 +94,59 @@ export function useNotifications() {
       });
       if (response.ok) {
         const data = await response.json();
-        
+
         // Filter notifications by user ID and role to ensure proper targeting
         const userNotifications = data.filter((n: NotificationData) => 
           n.userId === user.id
         );
-        
+
         // Check for new notifications and play sound
         const previousNotificationIds = notifications.map(n => n.id);
         const newNotifications = userNotifications.filter((n: NotificationData) => 
           !previousNotificationIds.includes(n.id) && !n.isRead
         );
-        
+
         // Handle new notifications professionally
         if (newNotifications.length > 0) {
           // Only play sound for the most recent notification to avoid spam
           const latestNotification = newNotifications[0];
           playNotificationSound(latestNotification);
-          
+
           // Show desktop notification for important updates
           if ('Notification' in window && Notification.permission === 'granted') {
             const isImportant = latestNotification.title.includes('Approved') || 
                                latestNotification.message.includes('approved') ||
                                latestNotification.type === 'delivery_assignment';
-            
+
             if (isImportant) {
-              new Notification(latestNotification.title, {
-                body: latestNotification.message,
-                icon: '/favicon.ico',
-                tag: `important-${latestNotification.id}`,
-                requireInteraction: true,
-                vibrate: [300, 200, 300]
-                  
-                  // Play celebratory second sound
-                  setTimeout(() => {
-                    const celebraryAudio = new Audio('/notification.mp3');
-                    celebraryAudio.volume = 0.5;
-                    celebraryAudio.play().catch(() => {
-                      console.log('Could not play celebratory sound');
-                    });
-                  }, 500);
-                }).catch(() => {
-                  console.log('Could not play approval notification sound');
+                new Notification(latestNotification.title, {
+                  body: latestNotification.message,
+                  icon: '/favicon.ico',
+                  tag: `important-${latestNotification.id}`,
+                  requireInteraction: true,
+                  vibrate: [300, 200, 300]
                 });
-              } catch (error) {
-                console.log('Error playing approval notification sound:', error);
+
+                // Play celebratory second sound
+                setTimeout(() => {
+                  const celebraryAudio = new Audio('/notification.mp3');
+                  celebraryAudio.volume = 0.5;
+                  celebraryAudio.play().catch(() => {
+                    console.log('Could not play celebratory sound');
+                  });
+                }, 500);
+
+                // Show toast for approval
+                toast({
+                  title: "🎉 " + latestNotification.title,
+                  description: latestNotification.message,
+                  duration: 8000
+                });
               }
-              
-              // Show toast for approval
-              toast({
-                title: "🎉 " + notification.title,
-                description: notification.message,
-                duration: 8000
-              });
             }
           });
         }
-        
+
         setNotifications(userNotifications);
         setUnreadCount(userNotifications.filter((n: NotificationData) => !n.isRead).length);
       }
@@ -165,7 +161,7 @@ export function useNotifications() {
       const response = await fetch(`/api/notifications/${notificationId}/read`, {
         method: 'PUT'
       });
-      
+
       if (response.ok) {
         setNotifications(prev => 
           prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
@@ -185,7 +181,7 @@ export function useNotifications() {
       const response = await fetch(`/api/notifications/user/${user.id}/read-all`, {
         method: 'PUT'
       });
-      
+
       if (response.ok) {
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
         setUnreadCount(0);
@@ -210,10 +206,10 @@ export function useNotifications() {
     // Add to notifications list
     setNotifications(prev => [notification, ...prev]);
     setUnreadCount(prev => prev + 1);
-    
+
     // Professional notification sound handling
     playNotificationSound(notification);
-    
+
     // Show browser notification with proper mobile support
     if ('Notification' in window && Notification.permission === 'granted') {
       const notificationOptions = {
@@ -232,7 +228,7 @@ export function useNotifications() {
       };
 
       const browserNotification = new Notification(notification.title, notificationOptions);
-      
+
       browserNotification.onclick = () => {
         window.focus();
         markAsRead(notification.id);
@@ -250,22 +246,22 @@ export function useNotifications() {
   const playNotificationSound = (notification: NotificationData) => {
     // Prevent multiple sounds playing simultaneously
     if (isPlayingSound) return;
-    
+
     setIsPlayingSound(true);
-    
+
     try {
       const audio = new Audio('/notification.mp3');
-      
+
       // Professional volume levels
       const isImportantNotification = notification.title.includes('Approved') || 
                                     notification.message.includes('approved') ||
                                     notification.type === 'delivery_assignment';
-      
+
       audio.volume = isImportantNotification ? 0.7 : 0.5;
-      
+
       // Mobile-friendly audio handling
       audio.preload = 'auto';
-      
+
       // Handle mobile audio restrictions
       const playAudio = () => {
         audio.play()
@@ -296,7 +292,7 @@ export function useNotifications() {
       } else {
         playAudio();
       }
-      
+
     } catch (error) {
       console.log('Error playing notification sound:', error);
       setIsPlayingSound(false);
@@ -337,7 +333,7 @@ export function useNotifications() {
       body: notification.message,
       tag: `notification-${notification.id}`
     });
-    
+
     // Show toast notification for desktop with special styling for approvals
     if (window.innerWidth >= 768) {
       const isApprovalNotification = notification.title.includes('Approved');

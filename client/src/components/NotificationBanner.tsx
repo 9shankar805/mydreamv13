@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useAuth } from '@/hooks/useAuth';
+import { useUser } from '@/hooks/use-user';
 import { useQuery } from '@tanstack/react-query';
 
 interface Notification {
@@ -16,7 +16,7 @@ interface Notification {
 }
 
 export default function NotificationBanner() {
-  const { user } = useAuth();
+  const { user } = useUser();
   const [visibleNotifications, setVisibleNotifications] = useState<Notification[]>([]);
   const [lastNotificationId, setLastNotificationId] = useState<number | null>(null);
 

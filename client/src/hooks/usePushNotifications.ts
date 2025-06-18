@@ -16,7 +16,7 @@ export function usePushNotifications(): PushNotificationHook {
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
-  const { user } = useAuth();
+  const { user } = useUser();
 
   useEffect(() => {
     // Check if browser supports push notifications
@@ -75,7 +75,7 @@ export function usePushNotifications(): PushNotificationHook {
     try {
       // Create a unique VAPID key for your application
       const vapidPublicKey = 'BEl62iUYgUivxIkv69yViEuiBIa40HmMJzakqDcLNWWEpYOtRQbGBbqCHaJI5T6v2PkhSrI3j9AQo7P4C2tgLI8';
-      
+
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
@@ -111,10 +111,10 @@ export function usePushNotifications(): PushNotificationHook {
 
     try {
       const subscription = await registration.pushManager.getSubscription();
-      
+
       if (subscription) {
         await subscription.unsubscribe();
-        
+
         // Remove subscription from server
         await fetch('/api/push/unsubscribe', {
           method: 'POST',

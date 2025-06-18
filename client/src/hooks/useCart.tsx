@@ -1,5 +1,5 @@
 import { useState, useEffect, createContext, useContext, ReactNode } from "react";
-import { useAuth } from "./useAuth";
+import { useUser } from "./useAuth";
 import type { CartItem, Product } from "@shared/schema";
 
 interface CartItemWithProduct extends CartItem {
@@ -26,7 +26,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItemWithProduct[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [deliveryFee, setDeliveryFee] = useState(0);
-  const { user } = useAuth();
+  const { user } = useUser();
 
   const refreshCart = async () => {
     if (!user) {

@@ -133,7 +133,7 @@ export function useNotifications() {
                   icon: '/favicon.ico',
                   tag: `important-${latestNotification.id}`,
                   requireInteraction: true,
-                  vibrate: [300, 200, 300]
+                  // vibrate: [300, 200, 300] // Removed as not supported in all browsers
                 });
 
                 // Play celebratory second sound
@@ -337,21 +337,23 @@ export function useNotifications() {
 
   // Add state for sound management
   const [isPlayingSound, setIsPlayingSound] = useState(false);
-    showNotification(notification.title, {
-      body: notification.message,
-      tag: `notification-${notification.id}`
-    });
 
-    // Show toast notification for desktop with special styling for approvals
-    if (window.innerWidth >= 768) {
-      const isApprovalNotification = notification.title.includes('Approved');
-      toast({
-        title: notification.title,
-        description: notification.message,
-        duration: isApprovalNotification ? 8000 : 5000 // Longer duration for approvals
+  const handleNotification = (notification: any) => {
+    try {
+      showNotification(notification.title, {
+        body: notification.message,
+        tag: `notification-${notification.id}`
       });
-    }
-  };
+
+      // Show toast notification for desktop with special styling for approvals
+      if (window.innerWidth >= 768) {
+        const isApprovalNotification = notification.title.includes('Approved');
+        toast({
+          title: notification.title,
+          description: notification.message,
+          duration: isApprovalNotification ? 8000 : 5000 // Longer duration for approvals
+        });
+      }
     } catch (error) {
       console.error('Error in notification handler:', error);
     }
@@ -371,44 +373,7 @@ export function useNotifications() {
     return () => clearInterval(interval);
   }, [user?.id, user?.role]);
 
-  const playNotificationSound = useCallback(async () => {
-    if (!notificationSettings.soundEnabled) return;
 
-    try {
-      // Try to play the notification sound
-      const audio = new Audio('/notification.mp3');
-      audio.volume = 0.5;
-
-      const playPromise = audio.play();
-      if (playPromise !== undefined) {
-        await playPromise;
-        console.log('Notification sound played successfully');
-      }
-    } catch (error) {
-      console.log('Could not play notification sound:', error);
-
-      // Fallback: try to play a simple beep sound
-      try {
-        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
-        const oscillator = audioContext.createOscillator();
-        const gainNode = audioContext.createGain();
-
-        oscillator.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
-        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
-
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime + 0.3);
-
-        console.log('Fallback beep sound played');
-      } catch (fallbackError) {
-        console.log('Could not play fallback sound:', fallbackError);
-      }
-    }
-  }, [notificationSettings.soundEnabled]);
 
   const clearNotification = (notificationId: number) => {
     setNotifications(prev => 

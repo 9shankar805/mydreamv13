@@ -198,7 +198,7 @@ export default function QuickFood() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
             {sortedItems.map((food) => (
               <FoodCard key={food.id} food={food} />
             ))}

@@ -20,6 +20,8 @@ import FoodHomepage from "@/pages/FoodHomepage";
 import Products from "@/pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import QuickFood from './pages/QuickFood';
+import StoreDetail from "./pages/StoreDetail";
+import RestaurantDetail from "./pages/RestaurantDetail";
 import Cart from "./pages/Cart";
 import Checkout from "@/pages/Checkout";
 import OrderConfirmation from "@/pages/OrderConfirmation";

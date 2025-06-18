@@ -255,25 +255,35 @@ export default function AdminResetPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ adminId: adminUser.id, ...data }),
       });
-      return response;
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to change password');
+      }
+      
+      return response.json();
     },
-    onSuccess: () => {
-      setShowPasswordDialog(false);
-      setAdminProfileData({
-        ...adminProfileData,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: ""
-      });
-      toast({
-        title: "Password Changed",
-        description: "Admin password has been changed successfully.",
-      });
+    onSuccess: (data) => {
+      if (data.success) {
+        setShowPasswordDialog(false);
+        setAdminProfileData({
+          ...adminProfileData,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: ""
+        });
+        toast({
+          title: "Password Changed",
+          description: "Admin password has been changed successfully.",
+        });
+      } else {
+        throw new Error(data.error || 'Password change failed');
+      }
     },
-    onError: () => {
+    onError: (error: any) => {
       toast({
         title: "Password Change Failed",
-        description: "Failed to change password. Please check your current password.",
+        description: error.message || "Failed to change password. Please check your current password.",
         variant: "destructive",
       });
     },
@@ -864,10 +874,17 @@ export default function AdminResetPage() {
                 onClick={() => {
                   if (adminProfileData.currentPassword && 
                       adminProfileData.newPassword && 
-                      adminProfileData.newPassword === adminProfileData.confirmPassword) {
+                      adminProfileData.newPassword === adminProfileData.confirmPassword &&
+                      adminProfileData.newPassword.length >= 6) {
                     changeAdminPasswordMutation.mutate({
                       currentPassword: adminProfileData.currentPassword,
                       newPassword: adminProfileData.newPassword
+                    });
+                  } else {
+                    toast({
+                      title: "Validation Error",
+                      description: "Please ensure all fields are filled correctly and passwords match.",
+                      variant: "destructive",
                     });
                   }
                 }}

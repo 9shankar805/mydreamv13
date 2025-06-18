@@ -17,10 +17,15 @@ export default function FoodCard({ food }: FoodCardProps) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { user } = useAuth();
   
+  // Safety checks for undefined properties
+  if (!food) {
+    return null;
+  }
+  
   const inWishlist = user ? isInWishlist(food.id) : false;
   const discountedPrice = food.isOnOffer && food.offerPercentage
-    ? (parseFloat(food.price) * (1 - food.offerPercentage / 100)).toFixed(2)
-    : food.price;
+    ? (parseFloat(food.price || "0") * (1 - (food.offerPercentage || 0) / 100)).toFixed(2)
+    : food.price || "0";
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -55,7 +60,7 @@ export default function FoodCard({ food }: FoodCardProps) {
             }}
           />
           
-          {food.isOnOffer && (
+          {food.isOnOffer && food.offerPercentage && (
             <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600">
               {food.offerPercentage}% OFF
             </Badge>
@@ -97,16 +102,16 @@ export default function FoodCard({ food }: FoodCardProps) {
               <span className="font-bold text-lg text-red-600">
                 ₹{discountedPrice}
               </span>
-              {food.isOnOffer && (
+              {food.isOnOffer && food.offerPercentage && (
                 <span className="text-sm text-gray-500 line-through">
-                  ₹{food.price}
+                  ₹{food.price || "0"}
                 </span>
               )}
             </div>
           </div>
           
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
-            {food.description}
+            {food.description || "Delicious food item"}
           </p>
           
           <div className="flex items-center justify-between mb-3">
@@ -124,14 +129,14 @@ export default function FoodCard({ food }: FoodCardProps) {
             )}
           </div>
           
-          {food.rating && parseFloat(food.rating) > 0 && (
+          {food.rating && parseFloat(food.rating || "0") > 0 && (
             <div className="flex items-center space-x-1 mb-3">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
                   <span
                     key={i}
                     className={`text-sm ${
-                      i < Math.floor(parseFloat(food.rating ?? "0"))
+                      i < Math.floor(parseFloat(food.rating || "0"))
                         ? 'text-yellow-400'
                         : 'text-gray-300'
                     }`}
@@ -141,7 +146,7 @@ export default function FoodCard({ food }: FoodCardProps) {
                 ))}
               </div>
               <span className="text-sm text-gray-600">
-                ({food.totalReviews} reviews)
+                ({food.totalReviews || 0} reviews)
               </span>
             </div>
           )}

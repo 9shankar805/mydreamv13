@@ -245,9 +245,9 @@ export default function RestaurantDetail() {
                 <p className="text-muted-foreground text-sm mt-2">Check back later for delicious options</p>
               </div>
             ) : (
-              <div className="grid grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {menuItems.map((item) => (
-                  <FoodCard key={item.id} product={item} />
+                  <FoodCard key={item.id} food={item} />
                 ))}
               </div>
             )}

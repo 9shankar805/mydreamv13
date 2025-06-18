@@ -427,8 +427,8 @@ export function useNotifications() {
     fetchNotifications,
     markAsRead,
     markAllAsRead,
-        clearNotification,
-        notificationSettings,
-        updateNotificationSettings
+    clearNotification,
+    notificationSettings,
+    updateNotificationSettings
   };
 }

@@ -235,10 +235,11 @@ function App() {
                 </ErrorBoundary>
               </TooltipProvider>
             </AppModeProvider>
-          </CartProvider>
-        </QueryClientProvider>
-      </ErrorBoundary>
-    );
-  }
+          </WishlistProvider>
+        </CartProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
+  );
+}
 
 export default App;

@@ -129,7 +129,13 @@ export default function StoreCard({ store, showDistance = true }: StoreCardProps
         </div>
 
         {distance !== null && (
-          <Badge variant="outline" className="text-xs w-full justify-center">
+          <Badge 
+            variant="outline" 
+            className={`text-xs w-full justify-center ${
+              distance < 0.1 ? 'bg-green-50 border-green-200 text-green-700' : 
+              distance < 0.5 ? 'bg-blue-50 border-blue-200 text-blue-700' : ''
+            }`}
+          >
             {formatDistance(distance)} away
           </Badge>
         )}

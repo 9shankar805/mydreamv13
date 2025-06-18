@@ -209,7 +209,9 @@ export function estimateDeliveryTime(distance: number): number {
  */
 export function formatDistance(distance: number): string {
   if (distance < 1) {
-    return `${Math.round(distance * 1000)}m`;
+    const meters = Math.round(distance * 1000);
+    // Show minimum 50 meters for very close distances
+    return `${Math.max(meters, 50)}m`;
   }
   return `${distance.toFixed(1)}km`;
 }

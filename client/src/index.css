@@ -51,23 +51,6 @@ body::-webkit-scrollbar {
   --input: 214 32% 91%;
   /* #e2e8f0 - Consistent input borders */
   --primary: 221 83% 53%;
-}
-
-/* Leaflet map container styles */
-.leaflet-container {
-  height: 100%;
-  width: 100%;
-  z-index: 1;
-}
-
-.leaflet-control-container {
-  z-index: 1000;
-}
-
-/* Fix Leaflet marker icons */
-.leaflet-default-icon-path {
-  background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png');
-}
   /* #2563eb - Professional blue */
   --primary-foreground: 0 0% 100%;
   /* #ffffff - White text on primary */
@@ -86,6 +69,22 @@ body::-webkit-scrollbar {
   --ring: 221 83% 53%;
   /* #2563eb - Matching primary color */
   --radius: 0.75rem;
+}
+
+/* Leaflet map container styles */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 1;
+}
+
+.leaflet-control-container {
+  z-index: 1000;
+}
+
+/* Fix Leaflet marker icons */
+.leaflet-default-icon-path {
+  background-image: url('https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png');
 }
 
 /* Swiper.js Custom Styles */

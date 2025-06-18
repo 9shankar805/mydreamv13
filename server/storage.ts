@@ -2070,7 +2070,7 @@ export class DatabaseStorage implements IStorage {
     try {
       console.log('Authenticating admin:', email);
 
-      // First try adminUsers table
+      // Try adminUsers table first (primary table)
       try {
         const [admin] = await db.select()
           .from(adminUsers)
@@ -2078,19 +2078,23 @@ export class DatabaseStorage implements IStorage {
           .limit(1);
 
         if (admin) {
-          console.log('Found admin in adminUsers:', admin.email);
+          console.log('Found admin in adminUsers table:', admin.email);
 
-          // Check if password matches
-          if (admin.password === password) {
-            console.log('Authentication successful');
+          // Check if password matches and admin is active
+          if (admin.password === password && admin.isActive) {
+            console.log('Authentication successful via adminUsers table');
             return admin;
+          } else {
+            console.log('Password mismatch or admin not active');
           }
+        } else {
+          console.log('Admin not found in adminUsers table');
         }
       } catch (adminUsersError) {
-        console.log('AdminUsers table query failed, trying admins table:', adminUsersError.message);
+        console.log('AdminUsers table query failed:', adminUsersError.message);
       }
 
-      // Fallback to admins table
+      // Fallback to admins table if it exists
       try {
         const [admin] = await db.select()
           .from(admins)
@@ -2112,10 +2116,10 @@ export class DatabaseStorage implements IStorage {
           };
         }
       } catch (adminsError) {
-        console.log('Admins table query failed:', adminsError.message);
+        console.log('Admins table not available or query failed:', adminsError.message);
       }
 
-      console.log('Authentication failed - user not found or invalid credentials');
+      console.log('Authentication failed - invalid credentials or admin not found');
       return null;
     } catch (error) {
       console.error('Admin authentication error:', error);
@@ -2125,6 +2129,8 @@ export class DatabaseStorage implements IStorage {
 
   async createDefaultAdmin(): Promise<void> {
     try {
+      console.log('🔧 Checking/creating default admin account...');
+      
       // Check if default admin already exists in adminUsers table
       const existingAdmin = await db.select()
         .from(adminUsers)
@@ -2133,7 +2139,7 @@ export class DatabaseStorage implements IStorage {
 
       if (existingAdmin.length === 0) {
         // Create default admin in adminUsers table
-        await db.insert(adminUsers).values({
+        const newAdmin = await db.insert(adminUsers).values({
           email: 'admin@sirahbazaar.com',
           password: 'admin123', // In production, this should be hashed
           fullName: 'System Administrator',
@@ -2141,13 +2147,24 @@ export class DatabaseStorage implements IStorage {
           isActive: true,
           createdAt: new Date(),
           updatedAt: new Date()
-        });
-        console.log('✅ Default admin account created: admin@sirahbazaar.com / admin123');
+        }).returning();
+        
+        console.log('✅ Default admin account created successfully');
+        console.log('📧 Email: admin@sirahbazaar.com');
+        console.log('🔑 Password: admin123');
       } else {
         console.log('✅ Default admin account already exists');
+        
+        // Ensure the existing admin is active
+        if (!existingAdmin[0].isActive) {
+          await db.update(adminUsers)
+            .set({ isActive: true, updatedAt: new Date() })
+            .where(eq(adminUsers.email, 'admin@sirahbazaar.com'));
+          console.log('✅ Default admin account activated');
+        }
       }
 
-      // Also ensure the old admins table has the admin if it exists
+      // Also ensure the old admins table has the admin if it exists (for backward compatibility)
       try {
         const existingOldAdmin = await db.select()
           .from(admins)
@@ -2163,13 +2180,15 @@ export class DatabaseStorage implements IStorage {
             isActive: true,
             createdAt: new Date()
           });
+          console.log('✅ Backup admin record created in old table');
         }
       } catch (error) {
         // Ignore errors for the old admins table if it doesn't exist
-        console.log('Old admins table not found or error inserting, continuing...');
+        console.log('ℹ️ Old admins table not available (this is normal)');
       }
     } catch (error) {
-      console.error('Error creating default admin:', error);
+      console.error('❌ Error creating default admin:', error);
+      console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack');
       // Don't throw error to prevent app crash during startup
     }
   }

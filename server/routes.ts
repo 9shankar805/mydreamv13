@@ -1218,19 +1218,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { email, password } = req.body;
 
+      console.log('🔐 Admin login attempt for:', email);
+
       if (!email || !password) {
+        console.log('❌ Missing email or password');
         return res.status(400).json({ error: "Email and password are required" });
       }
 
       const admin = await storage.authenticateAdmin(email, password);
 
       if (!admin) {
+        console.log('❌ Authentication failed for:', email);
         return res.status(401).json({ error: "Invalid admin credentials" });
       }
 
-      res.json({ admin });
+      console.log('✅ Admin login successful for:', email);
+      
+      // Don't send password in response
+      const { password: _, ...adminResponse } = admin;
+      res.json({ admin: adminResponse });
     } catch (error) {
-      console.error("Admin login error:", error);
+      console.error("❌ Admin login error:", error);
       res.status(500).json({ error: "Admin login failed" });
     }
   });

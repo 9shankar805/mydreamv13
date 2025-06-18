@@ -15,7 +15,7 @@ async function testPasswordChange() {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        email: 'admin@sirahbazaar.com', // Fixed typo: was 'sirahababzaar'
+        email: 'admin@sirahbazaar.com',
         password: 'admin123'
       })
     });

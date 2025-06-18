@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useUser } from '@/hooks/use-user';
+import { useUser } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 
 interface Notification {

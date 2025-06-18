@@ -130,3 +130,6 @@ export function useAuth() {
   }
   return context;
 }
+
+// Export useUser as an alias for useAuth for compatibility
+export const useUser = useAuth;

@@ -4,6 +4,8 @@ import {
   promotions, advertisements, productReviews, settlements, storeAnalytics, inventoryLogs,
   paymentTransactions, coupons, banners, supportTickets, siteSettings, deliveryPartners, deliveries,
   vendorVerifications, fraudAlerts, commissions, productAttributes, adminLogs, deliveryZones,
+  deliveryLocationTracking, deliveryStatusHistory, deliveryRoutes, pushNotificationTokens,
+  webSocketSessions, productTags, productTagRelations, flashSales,
   type User, type InsertUser, type AdminUser, type InsertAdminUser, type Store, type InsertStore, 
   type Category, type InsertCategory, type Product, type InsertProduct,
   type Order, type InsertOrder, type OrderItem, type InsertOrderItem,
@@ -2174,23 +2176,63 @@ export class DatabaseStorage implements IStorage {
 
   async resetAllSystemData(): Promise<boolean> {
     try {
-      // Delete in proper order to maintain referential integrity
-      await db.delete(orderItems);
-      await db.delete(orderTracking);
-      await db.delete(orders);
-      await db.delete(deliveries);
-      await db.delete(cartItems);
-      await db.delete(wishlistItems);
-      await db.delete(productReviews);
-      await db.delete(products);
-      await db.delete(stores);
-      await db.delete(storeAnalytics);
-      await db.delete(inventoryLogs);
-      await db.delete(promotions);
-      await db.delete(advertisements);
-      await db.delete(settlements);
-
-      return true;
+      return await db.transaction(async (tx) => {
+        console.log("Starting system data reset...");
+        
+        // Delete in proper order to maintain referential integrity
+        // 1. Delete delivery and tracking related data first
+        await tx.delete(deliveryLocationTracking);
+        await tx.delete(deliveryStatusHistory);
+        await tx.delete(deliveryRoutes);
+        await tx.delete(deliveries);
+        
+        // 2. Delete order-related data
+        await tx.delete(orderItems);
+        await tx.delete(orderTracking);
+        await tx.delete(paymentTransactions);
+        await tx.delete(returns);
+        await tx.delete(orders);
+        
+        // 3. Delete user-related product interactions
+        await tx.delete(cartItems);
+        await tx.delete(wishlistItems);
+        await tx.delete(productReviews);
+        
+        // 4. Delete product-related data
+        await tx.delete(productTagRelations);
+        await tx.delete(productAttributes);
+        await tx.delete(inventoryLogs);
+        await tx.delete(products);
+        
+        // 5. Delete store-related data
+        await tx.delete(storeAnalytics);
+        await tx.delete(promotions);
+        await tx.delete(advertisements);
+        await tx.delete(settlements);
+        await tx.delete(commissions);
+        await tx.delete(vendorVerifications);
+        await tx.delete(returnPolicies);
+        await tx.delete(stores);
+        
+        // 6. Delete categories and tags
+        await tx.delete(categories);
+        await tx.delete(productTags);
+        
+        // 7. Delete other system data
+        await tx.delete(notifications);
+        await tx.delete(websiteVisits);
+        await tx.delete(coupons);
+        await tx.delete(flashSales);
+        await tx.delete(banners);
+        await tx.delete(fraudAlerts);
+        await tx.delete(supportTickets);
+        await tx.delete(pushNotificationTokens);
+        await tx.delete(webSocketSessions);
+        await tx.delete(deliveryZones);
+        
+        console.log("System data reset completed successfully");
+        return true;
+      });
     } catch (error) {
       console.error("Error resetting all system data:", error);
       throw error;
@@ -2199,37 +2241,57 @@ export class DatabaseStorage implements IStorage {
 
   async resetStoreData(storeId: number): Promise<boolean> {
     try {
-      // Get all products for this store
-      const storeProducts = await db.select({ id: products.id })
-        .from(products)
-        .where(eq(products.storeId, storeId));
+      return await db.transaction(async (tx) => {
+        console.log(`Starting store data reset for store ID: ${storeId}`);
+        
+        // Get all products for this store
+        const storeProducts = await tx.select({ id: products.id })
+          .from(products)
+          .where(eq(products.storeId, storeId));
 
-      const productIds = storeProducts.map(p => p.id);
+        const productIds = storeProducts.map(p => p.id);
 
-      if (productIds.length > 0) {
-        // Delete order items for this store's products
-        for (const productId of productIds) {
-          await db.delete(orderItems).where(eq(orderItems.productId, productId));
-          await db.delete(cartItems).where(eq(cartItems.productId, productId));
-          await db.delete(wishlistItems).where(eq(wishlistItems.productId, productId));
-          await db.delete(productReviews).where(eq(productReviews.productId, productId));
+        if (productIds.length > 0) {
+          // Delete in proper order to maintain referential integrity
+          for (const productId of productIds) {
+            // Delete product-related data first
+            await tx.delete(productTagRelations).where(eq(productTagRelations.productId, productId));
+            await tx.delete(productAttributes).where(eq(productAttributes.productId, productId));
+            await tx.delete(cartItems).where(eq(cartItems.productId, productId));
+            await tx.delete(wishlistItems).where(eq(wishlistItems.productId, productId));
+            await tx.delete(productReviews).where(eq(productReviews.productId, productId));
+            await tx.delete(inventoryLogs).where(eq(inventoryLogs.productId, productId));
+            
+            // Handle order items - need to check if orders exist first
+            const relatedOrderItems = await tx.select({ orderId: orderItems.orderId })
+              .from(orderItems)
+              .where(eq(orderItems.productId, productId));
+            
+            await tx.delete(orderItems).where(eq(orderItems.productId, productId));
+            
+            // Delete notifications related to this product
+            await tx.delete(notifications).where(eq(notifications.productId, productId));
+          }
+
+          // Delete all products for this store
+          await tx.delete(products).where(eq(products.storeId, storeId));
         }
 
-        // Delete products
-        await db.delete(products).where(eq(products.storeId, storeId));
-      }
+        // Delete store-related data
+        await tx.delete(storeAnalytics).where(eq(storeAnalytics.storeId, storeId));
+        await tx.delete(promotions).where(eq(promotions.storeId, storeId));
+        await tx.delete(advertisements).where(eq(advertisements.storeId, storeId));
+        await tx.delete(settlements).where(eq(settlements.storeId, storeId));
+        await tx.delete(commissions).where(eq(commissions.storeId, storeId));
+        await tx.delete(vendorVerifications).where(eq(vendorVerifications.storeId, storeId));
+        await tx.delete(returnPolicies).where(eq(returnPolicies.storeId, storeId));
 
-      // Delete store-related data
-      await db.delete(storeAnalytics).where(eq(storeAnalytics.storeId, storeId));
-      await db.delete(inventoryLogs).where(eq(inventoryLogs.storeId, storeId));
-      await db.delete(promotions).where(eq(promotions.storeId, storeId));
-      await db.delete(advertisements).where(eq(advertisements.storeId, storeId));
-      await db.delete(settlements).where(eq(settlements.storeId, storeId));
+        // Finally delete the store itself
+        await tx.delete(stores).where(eq(stores.id, storeId));
 
-      // Delete the store itself
-      await db.delete(stores).where(eq(stores.id, storeId));
-
-      return true;
+        console.log(`Store data reset completed for store ID: ${storeId}`);
+        return true;
+      });
     } catch (error) {
       console.error("Error resetting store data:", error);
       throw error;

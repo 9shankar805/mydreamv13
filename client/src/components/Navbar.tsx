@@ -109,8 +109,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
         <div className="flex justify-between items-center h-12 sm:h-14">
           {/* Logo and Mode Swiper */}
-          <div className="flex items-center space-x-2">
-            <Link href="/" className="flex items-center space-x-1">
+          <div className="flex items-center space-x-1">
+            <Link href="/" className="flex items-center">
               {mode === 'food' ? (
                 <img 
                   src="/assets/icon1.png" 
@@ -128,28 +128,28 @@ export default function Navbar() {
 
             {/* Compact Mode Swiper */}
             {user?.role !== "shopkeeper" && (
-              <div className="relative bg-white/10 backdrop-blur-sm rounded-lg p-1 border border-white/20">
+              <div className="relative bg-white/10 backdrop-blur-sm rounded-lg p-0.5 border border-white/20 ml-1">
                 <div className="flex">
                   <button
                     onClick={() => setMode('shopping')}
-                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                    className={`flex items-center space-x-0.5 px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
                       mode === 'shopping' 
                         ? 'bg-white text-primary shadow-sm' 
                         : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <ShoppingBag className="h-3.5 w-3.5" />
+                    <ShoppingBag className="h-3 w-3" />
                     <span>Shop</span>
                   </button>
                   <button
                     onClick={() => setMode('food')}
-                    className={`flex items-center space-x-1 px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 ${
+                    className={`flex items-center space-x-0.5 px-2 py-1 rounded-md text-xs font-medium transition-all duration-200 ${
                       mode === 'food' 
                         ? 'bg-white text-primary shadow-sm' 
                         : 'text-white/80 hover:text-white hover:bg-white/10'
                     }`}
                   >
-                    <UtensilsCrossed className="h-3.5 w-3.5" />
+                    <UtensilsCrossed className="h-3 w-3" />
                     <span>Food</span>
                   </button>
                 </div>
@@ -158,78 +158,78 @@ export default function Navbar() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-6 flex-1 justify-center">
+          <div className="hidden md:flex items-center space-x-4 flex-1 justify-center">
             {/* Seller Navigation */}
             {user?.role === "shopkeeper" ? (
               <>
-                <Link href="/seller/dashboard" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <Home className="h-4 w-4" />
+                <Link href="/seller/dashboard" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <Home className="h-3.5 w-3.5" />
                   <span>Dashboard</span>
                 </Link>
-                <Link href="/seller/store" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <Store className="h-4 w-4" />
+                <Link href="/seller/store" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <Store className="h-3.5 w-3.5" />
                   <span>Store</span>
                 </Link>
-                <Link href="/seller/orders" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <ShoppingCart className="h-4 w-4" />
+                <Link href="/seller/orders" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <ShoppingCart className="h-3.5 w-3.5" />
                   <span>Orders</span>
                 </Link>
-                <Link href="/seller/inventory" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <Package className="h-4 w-4" />
+                <Link href="/seller/inventory" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <Package className="h-3.5 w-3.5" />
                   <span>Inventory</span>
                 </Link>
-                <Link href="/seller/promotions" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <Tag className="h-4 w-4" />
+                <Link href="/seller/promotions" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <Tag className="h-3.5 w-3.5" />
                   <span>Promotions</span>
                 </Link>
-                <Link href="/account" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <User className="h-4 w-4" />
+                <Link href="/account" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <User className="h-3.5 w-3.5" />
                   <span>Account</span>
                 </Link>
               </>
             ) : (
               /* Customer Navigation - Dynamic based on mode */
               <>
-                <Link href="/" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                  <Home className="h-4 w-4" />
+                <Link href="/" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                  <Home className="h-3.5 w-3.5" />
                   <span>Home</span>
                 </Link>
 
                 {mode === 'shopping' ? (
                   <>
-                    <Link href="/products" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                      <Package className="h-4 w-4" />
+                    <Link href="/products" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                      <Package className="h-3.5 w-3.5" />
                       <span>Products</span>
                     </Link>
-                    <Link href="/stores" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                      <Store className="h-4 w-4" />
+                    <Link href="/stores" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                      <Store className="h-3.5 w-3.5" />
                       <span>Stores</span>
                     </Link>
-                    <Link href="/store-maps" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                      <MapPin className="h-4 w-4" />
+                    <Link href="/store-maps" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                      <MapPin className="h-3.5 w-3.5" />
                       <span>Store Map</span>
                     </Link>
                   </>
                 ) : (
                   <>
-                    <Link href="/food-categories" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                      <UtensilsCrossed className="h-4 w-4" />
+                    <Link href="/food-categories" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                      <UtensilsCrossed className="h-3.5 w-3.5" />
                       <span>Menu</span>
                     </Link>
-                    <Link href="/restaurants" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                      <ChefHat className="h-4 w-4" />
+                    <Link href="/restaurants" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                      <ChefHat className="h-3.5 w-3.5" />
                       <span>Restaurants</span>
                     </Link>
-                    <Link href="/restaurant-maps" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                      <MapPin className="h-4 w-4" />
+                    <Link href="/restaurant-maps" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                      <MapPin className="h-3.5 w-3.5" />
                       <span>Restaurant Map</span>
                     </Link>
                   </>
                 )}
 
                 {user && (
-                  <Link href="/customer-dashboard" className="flex items-center space-x-1 hover:text-accent transition-colors">
-                    <User className="h-4 w-4" />
+                  <Link href="/customer-dashboard" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                    <User className="h-3.5 w-3.5" />
                     <span>Account</span>
                   </Link>
                 )}
@@ -249,35 +249,35 @@ export default function Navbar() {
           </div>
 
           {/* Top Action Buttons (Desktop) */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2">
             {/* Customer Actions (Cart & Wishlist) */}
             {user?.role !== "shopkeeper" && (
               <>
                 {/* Cart */}
-                <Link href="/cart" className="relative hover:text-accent transition-colors p-2">
-                  <ShoppingCart className="h-5 w-5" />
+                <Link href="/cart" className="relative hover:text-accent transition-colors p-1.5">
+                  <ShoppingCart className="h-4.5 w-4.5" />
                   {cartItemCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-accent text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    <span className="absolute -top-0.5 -right-0.5 bg-accent text-white text-xs rounded-full h-4 w-4 flex items-center justify-center text-[10px]">
                       {cartItemCount}
                     </span>
                   )}
                 </Link>
 
                 {/* Wishlist */}
-                <Link href="/wishlist" className="hover:text-accent transition-colors p-2">
-                  <Heart className="h-5 w-5" />
+                <Link href="/wishlist" className="hover:text-accent transition-colors p-1.5">
+                  <Heart className="h-4.5 w-4.5" />
                 </Link>
               </>
             )}
 
             {/* User Menu or Auth Buttons */}
             {user ? (
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-1">
                 <NotificationCenter />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="text-white hover:text-accent p-2">
-                      <User className="h-5 w-5" />
+                    <Button variant="ghost" className="text-white hover:text-accent p-1.5">
+                      <User className="h-4.5 w-4.5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
@@ -338,7 +338,7 @@ export default function Navbar() {
           </div>
 
           {/* Mobile Action Icons */}
-          <div className="md:hidden flex items-center space-x-3">
+          <div className="md:hidden flex items-center space-x-1">
             {/* Notifications - For all logged in users */}
             {user && (
               <Button

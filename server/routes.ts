@@ -933,7 +933,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createOrderTracking({
         orderId: createdOrder.id,
         status: "pending",
-        description: "Order placed successfully"
+        details: "Order placed successfully"
       });
 
       // Send notifications using the notification service
@@ -3212,7 +3212,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createOrderTracking({
         orderId: createdOrder.id,
         status: "pending",
-        description: "Order placed successfully"
+        details: "Order placed successfully"
       });
 
       // Send notifications to store owners
@@ -3981,9 +3981,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "update_delivery_zone",
-        resourceType: "delivery_zone",
-        resourceId: parseInt(id),
-        description: `Updated delivery zone: ${zone.name}`
+        targetType: "delivery_zone",
+        targetId: parseInt(id),
+        details: `Updated delivery zone: ${zone.name}`
       });
 
       res.json({ success: true, zone, message: "Delivery zone updated successfully" });
@@ -4012,9 +4012,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "delete_delivery_zone",
-        resourceType: "delivery_zone",
-        resourceId: parseInt(id),
-        description: `Deleted delivery zone with ID ${id}`
+        targetType: "delivery_zone",
+        targetId: parseInt(id),
+        details: `Deleted delivery zone with ID ${id}`
       });
 
       res.json({ success: true, message: "Delivery zone deleted successfully" });
@@ -4211,8 +4211,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "reset_all_data",
-        resourceType: "system",
-        description: `Reset all system data. Reason: ${reason || 'Not specified'}`
+        targetType: "system",
+        details: `Reset all system data. Reason: ${reason || 'Not specified'}`
       });
 
       // Delete all data in proper order
@@ -4250,9 +4250,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "reset_store_data",
-        resourceType: "store",
-        resourceId: storeId,
-        description: `Reset store data for ${store.name}. Reason: ${reason || 'Not specified'}`
+        targetType: "store",
+        targetId: storeId,
+        details: `Reset store data for ${store.name}. Reason: ${reason || 'Not specified'}`
       });
 
       // Delete store data
@@ -4290,9 +4290,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.logAdminAction({
         adminId,
         action: "suspend_user",
-        resourceType: "user",
-        resourceId: userId,
-        description: `Suspended user ${user.fullName}. Reason: ${reason || 'Not specified'}`
+        targetType: "user",
+        targetId: userId,
+        details: `Suspended user ${user.fullName}. Reason: ${reason || 'Not specified'}`
       });
 
       // Send notification to user
@@ -4598,7 +4598,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await realTimeTrackingService.updateDeliveryStatus({
         deliveryId,
         status: 'assigned',
-        description: 'Delivery partner assigned',
+        details: 'Delivery partner assigned',
         updatedBy: deliveryPartnerId
       });
 
@@ -4630,12 +4630,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
             {
               status: 'pending',
               timestamp: new Date(Date.now() - 3600000).toISOString(),
-              description: 'Order placed and waiting for assignment'
+              details: 'Order placed and waiting for assignment'
             },
             {
               status: delivery.status,
               timestamp: new Date().toISOString(),
-              description: `Current status: ${delivery.status}`
+              details: `Current status: ${delivery.status}`
             }
           ]
         })),

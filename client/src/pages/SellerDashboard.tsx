@@ -267,16 +267,16 @@ export default function ShopkeeperDashboard() {
     },
   });
 
-  // Stats calculations
-  const totalOrders = orders.length;
-  const totalProducts = products.length;
-  const totalRevenue = orders.reduce(
-    (sum, order) => sum + Number(order.totalAmount),
+  // Stats calculations with safe data access
+  const totalOrders = orders?.length || 0;
+  const totalProducts = products?.length || 0;
+  const totalRevenue = orders?.reduce(
+    (sum, order) => sum + (Number(order.totalAmount) || 0),
     0,
-  );
-  const pendingOrders = orders.filter(
+  ) || 0;
+  const pendingOrders = orders?.filter(
     (order) => order.status === "pending",
-  ).length;
+  ).length || 0;
 
   const handleAddProduct = async (data: ProductForm) => {
     if (!currentStore) return;
@@ -348,22 +348,38 @@ export default function ShopkeeperDashboard() {
   };
 
   const handleEditProduct = (product: Product) => {
-    setEditingProduct(product);
-    form.reset({
-      name: product.name,
-      description: product.description || "",
-      price: product.price,
-      originalPrice: product.originalPrice || "",
-      categoryId: product.categoryId || 0,
-      stock: product.stock || 0,
-      imageUrl: product.images?.[0] || "",
-      images: product.images || [],
-      isFastSell: product.isFastSell || false,
-      isOnOffer: product.isOnOffer || false,
-      offerPercentage: product.offerPercentage || 0,
-      offerEndDate: product.offerEndDate || "",
-    });
-    setActiveTab("add-product");
+    try {
+      setEditingProduct(product);
+      form.reset({
+        name: product.name || "",
+        description: product.description || "",
+        price: product.price || "",
+        originalPrice: product.originalPrice || "",
+        categoryId: product.categoryId || 1,
+        stock: product.stock || 0,
+        imageUrl: product.images?.[0] || "",
+        images: product.images || [],
+        isFastSell: product.isFastSell || false,
+        isOnOffer: product.isOnOffer || false,
+        offerPercentage: product.offerPercentage || 0,
+        offerEndDate: product.offerEndDate || "",
+        preparationTime: product.preparationTime || "",
+        ingredients: product.ingredients || [],
+        allergens: product.allergens || [],
+        spiceLevel: product.spiceLevel || "",
+        isVegetarian: product.isVegetarian || false,
+        isVegan: product.isVegan || false,
+        nutritionInfo: product.nutritionInfo || "",
+      });
+      setActiveTab("add-product");
+    } catch (error) {
+      console.error("Error editing product:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load product for editing",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleDeleteProduct = async (productId: number) => {
@@ -449,7 +465,21 @@ export default function ShopkeeperDashboard() {
     }
   };
 
-  if (!user || user.role !== "shopkeeper") {
+  // Loading state
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-muted flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardContent className="pt-6 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+            <p className="text-muted-foreground">Loading...</p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (user.role !== "shopkeeper") {
     return (
       <div className="min-h-screen bg-muted flex items-center justify-center">
         <Card className="w-full max-w-md">
@@ -458,6 +488,9 @@ export default function ShopkeeperDashboard() {
             <p className="text-muted-foreground">
               This page is only accessible to shopkeepers.
             </p>
+            <Link href="/" className="mt-4 inline-block">
+              <Button>Go to Home</Button>
+            </Link>
           </CardContent>
         </Card>
       </div>
@@ -640,8 +673,9 @@ export default function ShopkeeperDashboard() {
                 <CardTitle>Recent Orders</CardTitle>
               </CardHeader>
               <CardContent>
-                {orders.length === 0 ? (
+                {!orders || orders.length === 0 ? (
                   <div className="text-center py-8">
+                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">No orders yet</p>
                   </div>
                 ) : (
@@ -657,7 +691,7 @@ export default function ShopkeeperDashboard() {
                             {order.customerName}
                           </p>
                           <p className="text-sm text-muted-foreground">
-                            {new Date(order.createdAt).toLocaleDateString()}
+                            {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'N/A'}
                           </p>
                         </div>
                         <div className="text-right">
@@ -1194,7 +1228,7 @@ export default function ShopkeeperDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                {products.length === 0 ? (
+                {!products || products.length === 0 ? (
                   <div className="text-center py-8">
                     <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
@@ -1712,7 +1746,7 @@ export default function ShopkeeperDashboard() {
                     </Link>
                   </div>
                 </div>
-                {orders.length === 0 ? (
+                {!orders || orders.length === 0 ? (
                   <div className="text-center py-8">
                     <ShoppingCart className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">No orders yet</p>
@@ -1798,9 +1832,9 @@ export default function ShopkeeperDashboard() {
                 </p>
               </CardHeader>
               <CardContent>
-                {activeDeliveries.length === 0 ? (
+                {!activeDeliveries || activeDeliveries.length === 0 ? (
                   <div className="text-center py-8">
-                    <Package className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
+                    <Navigation className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
                     <p className="text-muted-foreground">
                       No active deliveries at the moment
                     </p>

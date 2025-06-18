@@ -129,7 +129,7 @@ function AppRouter() {
   );
 }
 
-function App() {
+function AppContent() {
   const { user, isLoading } = useUser();
 
   // Professional notification system initialization
@@ -216,6 +216,23 @@ function App() {
         </CartProvider>
       </QueryClientProvider>
     </ErrorBoundary>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <WishlistProvider>
+          <AppModeProvider>
+            <TooltipProvider>
+              <AppContent />
+              <Toaster />
+            </TooltipProvider>
+          </AppModeProvider>
+        </WishlistProvider>
+      </CartProvider>
+    </QueryClientProvider>
   );
 }
 

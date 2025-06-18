@@ -220,11 +220,10 @@ export interface IStorage {
   deleteProductAttribute(id: number): Promise<boolean>;
   logAdminAction(log: InsertAdminLog): Promise<AdminLog>;
   getAdminLogs(adminId?: number): Promise<AdminLog[]>;
-  bulkUpdateProductStatus(productIds: number[], status: boolean): Promise<boolean>;
-  getOrdersWithDetails(): Promise<any[]>;
-  getRevenueAnalytics(days?: number): Promise<any>;
-  getUsersAnalytics(): Promise<any>;
-  getInventoryAlerts(): Promise<any[]>;
+
+  // Reset methods
+  resetAllSystemData(): Promise<boolean>;
+  resetStoreData(storeId: number): Promise<boolean>;
 
   // Delivery partner operations
   getDeliveryPartner(id: number): Promise<DeliveryPartner | undefined>;
@@ -756,7 +755,7 @@ export class DatabaseStorage implements IStorage {
     if (page) {
       return await db.select().from(websiteVisits).where(eq(websiteVisits.page, page)).orderBy(desc(websiteVisits.visitedAt));
     }
-    return await db.select().from(websiteVisits).orderBy(desc(websiteVisits.visitedAt));
+    return await db.select().fromwebsiteVisits).orderBy(desc(websiteVisits.visitedAt));
   }
 
   // Notifications
@@ -2136,6 +2135,70 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error creating default admin:', error);
       // Don't throw error to prevent app crash during startup
+    }
+  }
+
+  async resetAllSystemData(): Promise<boolean> {
+    try {
+      // Delete in proper order to maintain referential integrity
+      await db.delete(orderItems);
+      await db.delete(orderTracking);
+      await db.delete(orders);
+      await db.delete(deliveries);
+      await db.delete(cartItems);
+      await db.delete(wishlistItems);
+      await db.delete(productReviews);
+      await db.delete(products);
+      await db.delete(stores);
+      await db.delete(storeAnalytics);
+      await db.delete(inventoryLogs);
+      await db.delete(promotions);
+      await db.delete(advertisements);
+      await db.delete(settlements);
+
+      return true;
+    } catch (error) {
+      console.error("Error resetting all system data:", error);
+      throw error;
+    }
+  }
+
+  async resetStoreData(storeId: number): Promise<boolean> {
+    try {
+      // Get all products for this store
+      const storeProducts = await db.select({ id: products.id })
+        .from(products)
+        .where(eq(products.storeId, storeId));
+
+      const productIds = storeProducts.map(p => p.id);
+
+      if (productIds.length > 0) {
+        // Delete order items for this store's products
+        for (const productId of productIds) {
+          await db.delete(orderItems).where(eq(orderItems.productId, productId));
+          await db.delete(cartItems).where(eq(cartItems.productId, productId));
+          await db.delete(wishlistItems).where(eq(wishlistItems.productId, productId));
+          await db.delete(productReviews).where(eq(productReviews.productId, productId));
+        }
+
+        // Delete products
+        await db.delete(products).where(eq(products.storeId, storeId));
+      }
+
+      // Delete store-related data
+      await db.delete(storeAnalytics).where(eq(storeAnalytics.storeId, storeId));
+      await db.delete(inventoryLogs).where(eq(inventoryLogs.storeId, storeId));
+      await db.delete(promotions).where(eq(promotions.storeId, storeId));
+      await db.delete(advertisements).where(eq(advertisements.storeId, storeId));
+      await db.delete(settlements).where(eq(settlements.storeId, storeId));
+
+      // Delete the store itself
+      await db.delete(stores).where(eq(stores.id, storeId));
+
+      return true;
+    } catch (error) {
+      console.error("Error resetting store data:", error);
+      throw error;
     }
   }
 }

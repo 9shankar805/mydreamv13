@@ -31,12 +31,13 @@ import Stores from "@/pages/Stores";
 import Account from "@/pages/Account";
 import ShopkeeperDashboard from "@/pages/ShopkeeperDashboard";
 import CustomerDashboard from "@/pages/CustomerDashboard";
-import AdminPanel from "@/pages/AdminPanel";
+import AdminPanel from "./pages/AdminPanel";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import EnhancedAdminDashboard from "@/pages/EnhancedAdminDashboard";
 import ComprehensiveAdminDashboard from "@/pages/ComprehensiveAdminDashboard";
-import ImprovedAdminDashboard from "@/pages/ImprovedAdminDashboard";
+import ImprovedAdminDashboard from "./pages/ImprovedAdminDashboard";
+import AdminResetPage from "./pages/AdminResetPage";
 import StoreMaps from "@/pages/StoreMaps";
 import RestaurantMaps from "@/pages/RestaurantMaps";
 import Wishlist from "@/pages/Wishlist";
@@ -94,6 +95,7 @@ function AppRouter() {
         <Route path="/store-maps" component={StoreMaps} />
         <Route path="/restaurant-maps" component={RestaurantMaps} />
         <Route path="/wishlist" component={Wishlist} />
+        <Route path="/reset-page" component={AdminResetPage} />
 
         {/* Seller Hub Routes */}
         <Route path="/seller/dashboard" component={SellerDashboard} />

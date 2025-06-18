@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
 
@@ -20,6 +20,11 @@ export function useNotifications() {
   const [unreadCount, setUnreadCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
+  const [notificationSettings, setNotificationSettings] = useState({
+        soundEnabled: true,
+        pushEnabled: true
+  });
 
   // Check browser support and current permission
   useEffect(() => {
@@ -28,6 +33,10 @@ export function useNotifications() {
       setPermission(Notification.permission);
     }
   }, []);
+
+    const updateNotificationSettings = (newSettings: any) => {
+        setNotificationSettings(newSettings);
+    }
 
   // Request notification permission
   const requestPermission = async (): Promise<boolean> => {
@@ -344,6 +353,102 @@ export function useNotifications() {
       });
     }
   };
+    } catch (error) {
+      console.error('Error in notification handler:', error);
+    }
+  };
+
+  // Subscribe to role-based notifications
+  useEffect(() => {
+    if (!user?.id || !user?.role) return;
+
+    const interval = setInterval(() => {
+      fetchNotifications();
+    }, 3000); // Poll every 3 seconds
+
+    // Initial fetch
+    fetchNotifications();
+
+    return () => clearInterval(interval);
+  }, [user?.id, user?.role]);
+
+  const playNotificationSound = useCallback(async () => {
+    if (!notificationSettings.soundEnabled) return;
+
+    try {
+      // Try to play the notification sound
+      const audio = new Audio('/notification.mp3');
+      audio.volume = 0.5;
+
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        await playPromise;
+        console.log('Notification sound played successfully');
+      }
+    } catch (error) {
+      console.log('Could not play notification sound:', error);
+
+      // Fallback: try to play a simple beep sound
+      try {
+        const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.3);
+
+        console.log('Fallback beep sound played');
+      } catch (fallbackError) {
+        console.log('Could not play fallback sound:', fallbackError);
+      }
+    }
+  }, [notificationSettings.soundEnabled]);
+
+  const markAsRead = async (notificationId: number) => {
+    try {
+       // Assuming apiRequest is a function for making API requests
+      const response = await fetch(`/api/notifications/${notificationId}/read`, {
+        method: 'PUT'
+      });
+      if (response.ok) {
+                setNotifications(prev =>
+                    prev.map(n => n.id === notificationId ? { ...n, isRead: true } : n)
+                );
+                setUnreadCount(prev => Math.max(0, prev - 1));
+            }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    if (!user?.id) return;
+
+    try {
+       const response = await fetch(`/api/notifications/user/${user.id}/read-all`, {
+            method: 'PUT'
+        });
+         if (response.ok) {
+                setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+                setUnreadCount(0);
+            }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+
+  const clearNotification = (notificationId: number) => {
+    setNotifications(prev => 
+      prev.filter(notif => notif.id !== notificationId)
+    );
+  };
 
   return {
     isSupported,
@@ -355,6 +460,9 @@ export function useNotifications() {
     showNewNotification,
     fetchNotifications,
     markAsRead,
-    markAllAsRead
+    markAllAsRead,
+        clearNotification,
+        notificationSettings,
+        updateNotificationSettings
   };
 }

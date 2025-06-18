@@ -4176,6 +4176,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin reset endpoints
+  app.delete("/api/admin/reset-all-data", async (req, res) => {
+    try {
+      const { adminId, reason } = req.body;
+
+      if (!adminId) {
+        return res.status(400).json({ error: "Admin ID is required" });
+      }
+
+      // Log the reset action
+      await storage.logAdminAction({
+        adminId,
+        action: "reset_all_data",
+        resourceType: "system",
+        description: `Reset all system data. Reason: ${reason || 'Not specified'}`
+      });
+
+      // Delete all data in proper order
+      await storage.resetAllSystemData();
+
+      res.json({ 
+        success: true, 
+        message: "All system data has been reset successfully" 
+      });
+    } catch (error) {
+      console.error("Reset all data error:", error);
+      res.status(500).json({ 
+        error: "Failed to reset system data",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.delete("/api/admin/stores/:storeId/reset", async (req, res) => {
+    try {
+      const storeId = parseInt(req.params.storeId);
+      const { adminId, reason } = req.body;
+
+      if (!adminId) {
+        return res.status(400).json({ error: "Admin ID is required" });
+      }
+
+      // Get store info for logging
+      const store = await storage.getStore(storeId);
+      if (!store) {
+        return res.status(404).json({ error: "Store not found" });
+      }
+
+      // Log the reset action
+      await storage.logAdminAction({
+        adminId,
+        action: "reset_store_data",
+        resourceType: "store",
+        resourceId: storeId,
+        description: `Reset store data for ${store.name}. Reason: ${reason || 'Not specified'}`
+      });
+
+      // Delete store data
+      await storage.resetStoreData(storeId);
+
+      res.json({ 
+        success: true, 
+        message: "Store data has been reset successfully" 
+      });
+    } catch (error) {
+      console.error("Reset store data error:", error);
+      res.status(500).json({ 
+        error: "Failed to reset store data",
+        details: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
+  app.put("/api/admin/users/:userId/suspend", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const { reason, adminId } = req.body;
+
+      if (!adminId) {
+        return res.status(400).json({ error: "Admin ID is required" });
+      }
+
+      const user = await storage.updateUser(userId, { status: "suspended" });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      // Log admin action
+      await storage.logAdminAction({
+        adminId,
+        action: "suspend_user",
+        resourceType: "user",
+        resourceId: userId,
+        description: `Suspended user ${user.fullName}. Reason: ${reason || 'Not specified'}`
+      });
+
+      // Send notification to user
+      await storage.createNotification({
+        userId: userId,
+        title: "Account Suspended",
+        message: reason || "Your account has been suspended. Please contact support for more information.",
+        type: "error"
+      });
+
+      res.json({ success: true, user });
+    } catch (error) {
+      console.error("Suspend user error:", error);
+      res.status(500).json({ error: "Failed to suspend user" });
+    }
+  });
+
   // Delete account endpoint
   app.delete("/api/auth/delete-account", async (req, res) => {
     try {

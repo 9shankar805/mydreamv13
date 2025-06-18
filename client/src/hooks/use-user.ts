@@ -1,7 +1,8 @@
+
 import { useAuth } from "./useAuth";
 
 export function useUser() {
-  const { user, login, logout, register, isLoading, refreshUserData } = useAuth();
+  const { user, login, logout, register, isLoading, refreshUser } = useAuth();
   
   return {
     user,
@@ -9,7 +10,7 @@ export function useUser() {
     logout,
     register,
     isLoading,
-    refreshUserData,
+    refreshUser,
     isAuthenticated: !!user,
   };
 }

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/hooks/useAuth";
+import { useUser } from "@/hooks/use-user";
 import { useCart } from "@/hooks/useCart";
 import { useAppMode } from "@/hooks/useAppMode";
 import { useQuery } from "@tanstack/react-query";
@@ -32,7 +32,7 @@ interface Notification {
 export default function Navbar() {
   const [, setLocation] = useLocation();
   const [isMobileNotificationOpen, setIsMobileNotificationOpen] = useState(false);
-  const { user, logout } = useAuth();
+  const { user, logout } = useUser();
   const { cartItems } = useCart();
   const { mode, setMode } = useAppMode();
 

@@ -345,10 +345,6 @@ body::-webkit-scrollbar {
   }
 
   /* Additional mobile responsiveness fixes */
-  .grid-cols-2 {
-    grid-template-columns: 1fr !important;
-    gap: 0.5rem !important;
-  }
 
   .flex-wrap {
     flex-wrap: wrap !important;

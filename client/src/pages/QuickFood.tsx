@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Clock, Filter, Star, Utensils } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
@@ -45,7 +44,7 @@ export default function QuickFood() {
     const prepTime = product.preparationTime ? parseInt(product.preparationTime) : 999;
     const isQuickFood = prepTime <= 20 || product.preparationTime?.toLowerCase().includes('quick') || 
                        product.preparationTime?.toLowerCase().includes('fast');
-    
+
     if (categoryFilter === 'all') return isQuickFood;
     return isQuickFood && product.category?.toLowerCase() === categoryFilter.toLowerCase();
   });
@@ -165,7 +164,7 @@ export default function QuickFood() {
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium mb-2">Sort By</label>
                 <Select value={sortBy} onValueChange={setSortBy}>
@@ -198,7 +197,7 @@ export default function QuickFood() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
             {sortedItems.map((food) => (
               <FoodCard key={food.id} food={food} />
             ))}

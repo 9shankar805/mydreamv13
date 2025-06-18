@@ -279,7 +279,14 @@ export default function ShopkeeperDashboard() {
   ).length || 0;
 
   const handleAddProduct = async (data: ProductForm) => {
-    if (!currentStore) return;
+    if (!currentStore) {
+      toast({
+        title: "Error",
+        description: "No store found. Please create a store first.",
+        variant: "destructive",
+      });
+      return;
+    }
 
     try {
       const productData = {

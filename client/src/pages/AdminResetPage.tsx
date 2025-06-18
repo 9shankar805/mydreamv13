@@ -359,17 +359,22 @@ export default function AdminResetPage() {
       {/* Header */}
       <div className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-4 gap-4">
             <div className="flex items-center">
-              <AlertTriangle className="h-8 w-8 text-red-600 mr-3" />
+              <AlertTriangle className="h-6 w-6 sm:h-8 sm:w-8 text-red-600 mr-2 sm:mr-3" />
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Admin Reset Center</h1>
-                <p className="text-sm text-gray-500">Manage and reset system data</p>
+                <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Admin Reset Center</h1>
+                <p className="text-xs sm:text-sm text-gray-500">Manage and reset system data</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">Welcome, {adminUser.fullName}</span>
-              <Button variant="outline" onClick={() => setLocation("/admin/dashboard")}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 w-full sm:w-auto">
+              <span className="text-xs sm:text-sm text-gray-600">Welcome, {adminUser.fullName}</span>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setLocation("/admin/dashboard")}
+                className="w-full sm:w-auto"
+              >
                 Back to Dashboard
               </Button>
             </div>
@@ -378,41 +383,41 @@ export default function AdminResetPage() {
       </div>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-8">
         {/* Warning Alert */}
-        <Alert className="mb-6 border-red-200 bg-red-50">
+        <Alert className="mb-4 sm:mb-6 border-red-200 bg-red-50">
           <AlertTriangle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
+          <AlertDescription className="text-xs sm:text-sm text-red-800">
             <strong>Warning:</strong> Actions performed on this page are irreversible. Please proceed with caution and ensure you have proper backups.
           </AlertDescription>
         </Alert>
 
         {/* Admin Profile Management */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Shield className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-8">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Shield className="h-4 w-4 sm:h-5 sm:w-5" />
               Admin Profile Management
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-4">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6">
+              <div className="space-y-3 sm:space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Current Email</label>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-700">{adminUser.email}</span>
+                  <label className="block text-xs sm:text-sm font-medium mb-2">Current Email</label>
+                  <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
+                    <span className="text-xs sm:text-sm text-gray-700 break-all">{adminUser.email}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Full Name</label>
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <span className="text-sm text-gray-700">{adminUser.fullName}</span>
+                  <label className="block text-xs sm:text-sm font-medium mb-2">Full Name</label>
+                  <div className="p-2 sm:p-3 bg-gray-50 rounded-lg">
+                    <span className="text-xs sm:text-sm text-gray-700">{adminUser.fullName}</span>
                   </div>
                 </div>
               </div>
               
-              <div className="space-y-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <Button
                   onClick={() => {
                     setAdminProfileData({
@@ -422,18 +427,20 @@ export default function AdminResetPage() {
                     });
                     setShowAdminProfileDialog(true);
                   }}
-                  className="w-full"
+                  className="w-full text-xs sm:text-sm"
+                  size="sm"
                 >
-                  <UserX className="h-4 w-4 mr-2" />
+                  <UserX className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Update Email & Name
                 </Button>
                 
                 <Button
                   variant="outline"
                   onClick={() => setShowPasswordDialog(true)}
-                  className="w-full"
+                  className="w-full text-xs sm:text-sm"
+                  size="sm"
                 >
-                  <Shield className="h-4 w-4 mr-2" />
+                  <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Change Password
                 </Button>
               </div>
@@ -442,32 +449,31 @@ export default function AdminResetPage() {
         </Card>
 
         {/* System Reset Section */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <RotateCcw className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-8">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-red-600 text-lg sm:text-xl">
+              <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" />
               System Reset Options
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <CardContent className="pt-0">
+            <div className="grid grid-cols-1 gap-4">
               <Button
                 variant="destructive"
-                size="lg"
                 onClick={() => handleAction({ 
                   type: "reset-all", 
                   title: "Reset All System Data",
                   description: "This will delete ALL stores, products, orders, and related data. Users accounts will remain but their store data will be removed."
                 })}
-                className="h-20 flex flex-col gap-2"
+                className="h-16 sm:h-20 flex flex-col gap-2 text-xs sm:text-sm"
               >
-                <RotateCcw className="h-6 w-6" />
+                <RotateCcw className="h-5 w-5 sm:h-6 sm:w-6" />
                 Reset All System Data
               </Button>
               
-              <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                <h3 className="font-medium text-red-800 mb-2">What will be reset:</h3>
-                <ul className="text-sm text-red-700 space-y-1">
+              <div className="bg-red-50 p-3 sm:p-4 rounded-lg border border-red-200">
+                <h3 className="font-medium text-red-800 mb-2 text-sm sm:text-base">What will be reset:</h3>
+                <ul className="text-xs sm:text-sm text-red-700 space-y-1">
                   <li>• All store information and settings</li>
                   <li>• All products and inventory</li>
                   <li>• All orders and order history</li>
@@ -480,17 +486,17 @@ export default function AdminResetPage() {
         </Card>
 
         {/* Search and Filter */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-6">
-          <div className="flex-1">
+        <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="w-full">
             <Input
               placeholder="Search stores, products, or users..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full"
+              className="w-full text-sm"
             />
           </div>
           <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48 text-sm">
               <SelectValue placeholder="Filter by type" />
             </SelectTrigger>
             <SelectContent>
@@ -502,41 +508,41 @@ export default function AdminResetPage() {
         </div>
 
         {/* Stores Management */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <Store className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-8">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Store className="h-4 w-4 sm:h-5 sm:w-5" />
                 Store Management
               </CardTitle>
-              <Badge variant="outline">{getFilteredStores().length} Stores</Badge>
+              <Badge variant="outline" className="text-xs">{getFilteredStores().length} Stores</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="pt-0">
+            <div className="overflow-x-auto">
+              <Table className="min-w-[600px]">
               <TableHeader>
-                <TableRow>
-                  <TableHead>Store Name</TableHead>
-                  <TableHead>Owner</TableHead>
-                  <TableHead>Products</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getFilteredStores().map((store: any) => (
-                  <TableRow key={store.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{store.name}</p>
-                        <p className="text-sm text-gray-500">{store.storeType}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>{store.ownerName || 'Unknown'}</TableCell>
-                    <TableCell>{allProducts.filter((p: any) => p.storeId === store.id).length}</TableCell>
-                    <TableCell>{getStatusBadge(store.status || 'active')}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
+                  <TableRow>
+                    <TableHead className="text-xs sm:text-sm">Store Name</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Owner</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Products</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {getFilteredStores().map((store: any) => (
+                    <TableRow key={store.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-xs sm:text-sm">{store.name}</p>
+                          <p className="text-xs text-gray-500">{store.storeType}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs sm:text-sm">{store.ownerName || 'Unknown'}</TableCell>
+                      <TableCell className="text-xs sm:text-sm">{allProducts.filter((p: any) => p.storeId === store.id).length}</TableCell>
+                      <TableCell>{getStatusBadge(store.status || 'active')}</TableCell>
+                      <TableCell>
                         <Button
                           size="sm"
                           variant="destructive"
@@ -546,28 +552,29 @@ export default function AdminResetPage() {
                             title: "Reset Store Data",
                             description: `This will delete all data for "${store.name}" including products, orders, and analytics.`
                           })}
+                          className="text-xs whitespace-nowrap"
                         >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Reset Store
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          Reset
                         </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
         {/* Products Management */}
-        <Card className="mb-8">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <Package className="h-5 w-5" />
+        <Card className="mb-4 sm:mb-8">
+          <CardHeader className="pb-4">
+            <div className="flex flex-col gap-3 sm:gap-0 sm:flex-row sm:justify-between sm:items-center">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
                 Product Management
               </CardTitle>
-              <div className="flex gap-2">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {selectedItems.length > 0 && (
                   <Button
                     variant="destructive"
@@ -576,169 +583,178 @@ export default function AdminResetPage() {
                       title: "Delete Selected Products",
                       description: `This will permanently delete ${selectedItems.length} selected products.`
                     })}
+                    size="sm"
+                    className="text-xs sm:text-sm"
                   >
-                    <Trash2 className="h-4 w-4 mr-2" />
+                    <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Delete Selected ({selectedItems.length})
                   </Button>
                 )}
-                <Badge variant="outline">{getFilteredProducts().length} Products</Badge>
+                <Badge variant="outline" className="text-xs self-start sm:self-center">{getFilteredProducts().length} Products</Badge>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
+          <CardContent className="pt-0">
+            <div className="overflow-x-auto">
+              <Table className="min-w-[700px]">
               <TableHeader>
-                <TableRow>
-                  <TableHead className="w-12">
-                    <Checkbox
-                      checked={selectedItems.length === getFilteredProducts().length && getFilteredProducts().length > 0}
-                      onCheckedChange={(checked) => {
-                        if (checked) {
-                          setSelectedItems(getFilteredProducts().map((p: any) => p.id));
-                        } else {
-                          setSelectedItems([]);
-                        }
-                      }}
-                    />
-                  </TableHead>
-                  <TableHead>Product</TableHead>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Price</TableHead>
-                  <TableHead>Stock</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getFilteredProducts().slice(0, 20).map((product: any) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
+                  <TableRow>
+                    <TableHead className="w-8 sm:w-12">
                       <Checkbox
-                        checked={selectedItems.includes(product.id)}
+                        checked={selectedItems.length === getFilteredProducts().length && getFilteredProducts().length > 0}
                         onCheckedChange={(checked) => {
                           if (checked) {
-                            setSelectedItems([...selectedItems, product.id]);
+                            setSelectedItems(getFilteredProducts().map((p: any) => p.id));
                           } else {
-                            setSelectedItems(selectedItems.filter(id => id !== product.id));
+                            setSelectedItems([]);
                           }
                         }}
                       />
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center space-x-3">
-                        {product.imageUrl && (
-                          <img
-                            src={product.imageUrl}
-                            alt={product.name}
-                            className="w-10 h-10 rounded object-cover"
-                          />
-                        )}
-                        <div>
-                          <p className="font-medium">{product.name}</p>
-                          <p className="text-sm text-gray-500">ID: {product.id}</p>
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{product.storeName || 'Unknown Store'}</TableCell>
-                    <TableCell>Rs. {product.price}</TableCell>
-                    <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => handleAction({
-                          type: "delete-product",
-                          productId: product.id,
-                          title: "Delete Product",
-                          description: `This will permanently delete "${product.name}".`
-                        })}
-                      >
-                        <Trash2 className="h-4 w-4 mr-1" />
-                        Delete
-                      </Button>
-                    </TableCell>
+                    </TableHead>
+                    <TableHead className="text-xs sm:text-sm">Product</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Store</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Price</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Stock</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {getFilteredProducts().slice(0, 20).map((product: any) => (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedItems.includes(product.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedItems([...selectedItems, product.id]);
+                            } else {
+                              setSelectedItems(selectedItems.filter(id => id !== product.id));
+                            }
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          {product.imageUrl && (
+                            <img
+                              src={product.imageUrl}
+                              alt={product.name}
+                              className="w-8 h-8 sm:w-10 sm:h-10 rounded object-cover"
+                            />
+                          )}
+                          <div>
+                            <p className="font-medium text-xs sm:text-sm">{product.name}</p>
+                            <p className="text-xs text-gray-500">ID: {product.id}</p>
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-xs sm:text-sm">{product.storeName || 'Unknown Store'}</TableCell>
+                      <TableCell className="text-xs sm:text-sm">Rs. {product.price}</TableCell>
+                      <TableCell className="text-xs sm:text-sm">{product.stock}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => handleAction({
+                            type: "delete-product",
+                            productId: product.id,
+                            title: "Delete Product",
+                            description: `This will permanently delete "${product.name}".`
+                          })}
+                          className="text-xs whitespace-nowrap"
+                        >
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          Delete
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 
         {/* Users Management */}
         <Card>
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle className="flex items-center gap-2">
-                <Users className="h-5 w-5" />
+          <CardHeader className="pb-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5" />
                 User Management
               </CardTitle>
-              <Badge variant="outline">{getFilteredUsers().length} Users</Badge>
+              <Badge variant="outline" className="text-xs">{getFilteredUsers().length} Users</Badge>
             </div>
           </CardHeader>
-          <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Joined</TableHead>
-                  <TableHead>Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {getFilteredUsers().map((user: any) => (
-                  <TableRow key={user.id}>
-                    <TableCell>
-                      <div>
-                        <p className="font-medium">{user.fullName}</p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'shopkeeper' ? 'default' : 'secondary'}>
-                        {user.role.replace('_', ' ')}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
-                    <TableCell>{new Date(user.createdAt).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        {user.status === 'active' && (
-                          <>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => handleAction({
-                                type: "suspend-user",
-                                userId: user.id,
-                                title: "Suspend User",
-                                description: `This will suspend ${user.fullName}'s account. They will not be able to access the platform.`
-                              })}
-                            >
-                              <Pause className="h-4 w-4 mr-1" />
-                              Suspend
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleAction({
-                                type: "ban-user",
-                                userId: user.id,
-                                title: "Ban User",
-                                description: `This will permanently ban ${user.fullName}'s account.`
-                              })}
-                            >
-                              <Ban className="h-4 w-4 mr-1" />
-                              Ban
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
+          <CardContent className="pt-0">
+            <div className="overflow-x-auto">
+              <Table className="min-w-[650px]">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="text-xs sm:text-sm">User</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Role</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Status</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Joined</TableHead>
+                    <TableHead className="text-xs sm:text-sm">Actions</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {getFilteredUsers().map((user: any) => (
+                    <TableRow key={user.id}>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium text-xs sm:text-sm">{user.fullName}</p>
+                          <p className="text-xs text-gray-500 break-all">{user.email}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={user.role === 'shopkeeper' ? 'default' : 'secondary'} className="text-xs">
+                          {user.role.replace('_', ' ')}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{getStatusBadge(user.status)}</TableCell>
+                      <TableCell className="text-xs sm:text-sm">{new Date(user.createdAt).toLocaleDateString()}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col sm:flex-row gap-1 sm:gap-2">
+                          {user.status === 'active' && (
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleAction({
+                                  type: "suspend-user",
+                                  userId: user.id,
+                                  title: "Suspend User",
+                                  description: `This will suspend ${user.fullName}'s account. They will not be able to access the platform.`
+                                })}
+                                className="text-xs whitespace-nowrap"
+                              >
+                                <Pause className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                Suspend
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => handleAction({
+                                  type: "ban-user",
+                                  userId: user.id,
+                                  title: "Ban User",
+                                  description: `This will permanently ban ${user.fullName}'s account.`
+                                })}
+                                className="text-xs whitespace-nowrap"
+                              >
+                                <Ban className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                Ban
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </CardContent>
         </Card>
 

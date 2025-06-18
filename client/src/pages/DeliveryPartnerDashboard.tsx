@@ -368,8 +368,6 @@ export default function DeliveryPartnerDashboard() {
                 </div>
               </CardContent>
             </Card>
-             <NotificationTestButton />
-      <SoundTestButton />
           </TabsContent>
 
           <TabsContent value="orders" className="space-y-4 sm:space-y-6">

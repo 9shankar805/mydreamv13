@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -298,6 +297,40 @@ export default function DeliveryMap({
           />
         </CardContent>
       </Card>
+
+      {/* Map Controls */}
+      <div className="flex gap-2">
+        <Button 
+          onClick={handleUpdateLocation}
+          size="sm"
+          variant="outline"
+        >
+          <MapPin className="h-4 w-4 mr-2" />
+          Update Location
+        </Button>
+        
+        {pickupLocation && (
+          <Button 
+            onClick={() => handleNavigate(pickupLocation)}
+            size="sm"
+            variant="outline"
+          >
+            <Navigation className="h-4 w-4 mr-2" />
+            Navigate to Pickup
+          </Button>
+        )}
+        
+        {deliveryLocation && (
+          <Button 
+            onClick={() => handleNavigate(deliveryLocation)}
+            size="sm"
+            variant="outline"
+          >
+            <Navigation className="h-4 w-4 mr-2" />
+            Navigate to Delivery
+          </Button>
+        )}
+      </div>
 
       {/* Location Details */}
       {(pickupLocation || deliveryLocation) && (

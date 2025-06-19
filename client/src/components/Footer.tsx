@@ -1,5 +1,13 @@
 import { Link } from "wouter";
-import { Store, Facebook, Twitter, Instagram, Youtube, Mail, Phone } from "lucide-react";
+import {
+  Store,
+  Facebook,
+  Twitter,
+  Instagram,
+  Youtube,
+  Mail,
+  Phone,
+} from "lucide-react";
 
 export default function Footer() {
   return (
@@ -13,19 +21,32 @@ export default function Footer() {
               <span className="text-xl font-bold">Siraha Bazaar</span>
             </div>
             <p className="text-gray-300 text-sm mb-4">
-              Your trusted local marketplace connecting you with the best vendors in Siraha.
+              Your trusted local marketplace connecting you with the best
+              vendors in Siraha.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-300 hover:text-white transition-colors">
+              <a
+                href="#"
+                className="text-gray-300 hover:text-white transition-colors"
+              >
                 <Youtube className="h-5 w-5" />
               </a>
             </div>
@@ -41,7 +62,10 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="hover:text-white transition-colors">
+                <Link
+                  href="/products"
+                  className="hover:text-white transition-colors"
+                >
                   Products
                 </Link>
               </li>
@@ -63,22 +87,34 @@ export default function Footer() {
             <h4 className="font-semibold mb-4">Categories</h4>
             <ul className="space-y-2 text-gray-300 text-sm">
               <li>
-                <Link href="/products?category=1" className="hover:text-white transition-colors">
+                <Link
+                  href="/products?category=1"
+                  className="hover:text-white transition-colors"
+                >
                   Groceries
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=2" className="hover:text-white transition-colors">
+                <Link
+                  href="/products?category=2"
+                  className="hover:text-white transition-colors"
+                >
                   Clothing
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=3" className="hover:text-white transition-colors">
+                <Link
+                  href="/products?category=3"
+                  className="hover:text-white transition-colors"
+                >
                   Electronics
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=4" className="hover:text-white transition-colors">
+                <Link
+                  href="/products?category=4"
+                  className="hover:text-white transition-colors"
+                >
                   Home & Kitchen
                 </Link>
               </li>
@@ -91,21 +127,26 @@ export default function Footer() {
             <div className="space-y-3 text-gray-300 text-sm">
               <div className="flex items-center space-x-2">
                 <Mail className="h-4 w-4" />
-                <span>info@sirahbazaar.com</span>
+                <span>sirahabazzar@gamil.com</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Phone className="h-4 w-4" />
-                <span>+977-33-123456</span>
+                <span>+977-9805916598</span>
               </div>
               <div>
                 <p>Siraha, Nepal</p>
+              </div>
+              <div>
+                <p>Developed by Shankar Yadav</p>
               </div>
             </div>
           </div>
         </div>
 
         <div className="border-t border-gray-700 mt-8 pt-8 text-center">
-          <p className="text-gray-300">&copy; 2024 Siraha Bazaar. All rights reserved.</p>
+          <p className="text-gray-300">
+            &copy; 2025 Shankar Yadav. All rights reserved.
+          </p>
         </div>
       </div>
     </footer>

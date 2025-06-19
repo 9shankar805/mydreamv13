@@ -9,6 +9,7 @@ import ProductCard from "@/components/ProductCard";
 import { ProductReviews } from "@/components/ProductReviews";
 import { QuickRating } from "@/components/QuickRating";
 import { useCart } from "@/hooks/useCart";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import type { Product, Store as StoreType } from "@shared/schema";
 
@@ -17,6 +18,7 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState(0);
   const { addToCart } = useCart();
+  const { user } = useAuth();
   const { toast } = useToast();
 
   const { data: product, isLoading } = useQuery<Product>({
@@ -36,6 +38,15 @@ export default function ProductDetail() {
 
   const handleAddToCart = async () => {
     if (!product) return;
+    
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to add items to your cart.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     try {
       await addToCart(product.id, quantity);

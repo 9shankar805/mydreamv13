@@ -28,6 +28,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/hooks/useAuth";
 import { useWishlist } from "@/hooks/useWishlist";
+import { useCart } from "@/hooks/useCart";
 import { useToast } from "@/hooks/use-toast";
 import { apiPut } from "@/lib/api";
 import NotificationCenter from "@/components/NotificationCenter";
@@ -56,6 +57,7 @@ export default function CustomerDashboard() {
   const [activeTab, setActiveTab] = useState("orders");
   const { user, logout } = useAuth();
   const { wishlistItems } = useWishlist();
+  const { addToCart } = useCart();
   const { toast } = useToast();
 
   // Queries
@@ -98,6 +100,31 @@ export default function CustomerDashboard() {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddToCart = async (productId: number, productName: string) => {
+    if (!user) {
+      toast({
+        title: "Login required",
+        description: "Please login to add items to your cart.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      await addToCart(productId, 1);
+      toast({
+        title: "Added to cart",
+        description: `${productName} has been added to your cart.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add item to cart. Please try again.",
         variant: "destructive",
       });
     }
@@ -464,7 +491,11 @@ export default function CustomerDashboard() {
                             ₹{item.product?.price || "0"}
                           </p>
                           <div className="flex gap-2">
-                            <Button size="sm" className="flex-1">
+                            <Button 
+                              size="sm" 
+                              className="flex-1"
+                              onClick={() => handleAddToCart(item.productId, item.product?.name || "Product")}
+                            >
                               Add to Cart
                             </Button>
                             <Button variant="outline" size="sm">

@@ -40,6 +40,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import AddProductForm from "@/components/AddProductForm";
+import { LocationPicker } from "@/components/LocationPicker";
+import ImageUpload from "@/components/ImageUpload";
 import type { Product, Order, OrderItem, Store, Category } from "@shared/schema";
 import { LeafletDeliveryMap } from "@/components/tracking/LeafletDeliveryMap";
 import { LocationTracker } from "@/components/LocationTracker";
@@ -672,13 +674,13 @@ export default function ShopkeeperDashboard() {
                     />
 
                     <LocationPicker
-                      address={storeForm.watch("address")}
-                      latitude={storeForm.watch("latitude")}
-                      longitude={storeForm.watch("longitude")}
-                      onLocationChange={(data) => {
+                      address={storeForm.watch("address") || ""}
+                      latitude={parseFloat(storeForm.watch("latitude") || "0")}
+                      longitude={parseFloat(storeForm.watch("longitude") || "0")}
+                      onLocationChange={(data: any) => {
                         storeForm.setValue("address", data.address);
-                        storeForm.setValue("latitude", data.latitude);
-                        storeForm.setValue("longitude", data.longitude);
+                        storeForm.setValue("latitude", data.latitude.toString());
+                        storeForm.setValue("longitude", data.longitude.toString());
                       }}
                     />
 
@@ -1578,8 +1580,8 @@ export default function ShopkeeperDashboard() {
                             Send Standard Notification
                           </Button>
                         </div>
-                        {/* Display Delivery Tracking Map if a delivery partner is assigned */}
-                        {order.deliveryPartner && (
+                        {/* Display Delivery Tracking Map if order has delivery info */}
+                        {order.status === 'shipped' && (
                           <div className="mt-4 border-t pt-4">
                             <div className="flex items-center justify-between mb-3">
                               <h5 className="font-semibold flex items-center gap-2">
@@ -1592,14 +1594,11 @@ export default function ShopkeeperDashboard() {
                             </div>
                             <div className="bg-gray-50 rounded-lg p-3 mb-3">
                               <p className="text-sm">
-                                <strong>Contact Delivery Partner:</strong>
-                                <a href={`tel:${order.deliveryPartner.phone}`} className="text-blue-600 hover:underline ml-2">
-                                  <Phone className="inline h-4 w-4 mr-1"/>
-                                  {order.deliveryPartner.phone}
-                                </a>
+                                <strong>Delivery Status:</strong>
+                                <span className="ml-2 capitalize">{order.status}</span>
                               </p>
                               <p className="text-sm text-gray-600 mt-1">
-                                Partner: {order.deliveryPartner.name || 'Assigned Partner'}
+                                Delivery Address: {order.shippingAddress}
                               </p>
                             </div>
                             <div className="h-64 rounded-lg overflow-hidden border">

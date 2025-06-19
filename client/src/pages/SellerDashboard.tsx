@@ -50,6 +50,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiPost, apiPut, apiDelete } from "@/lib/api";
 import { queryClient } from "@/lib/queryClient";
 import AddProductForm from "@/components/AddProductForm";
+import { LocationPicker } from "@/components/LocationPicker";
+import ImageUpload from "@/components/ImageUpload";
 import { DeliveryTrackingMap } from "@/components/tracking/DeliveryTrackingMap";
 import type {
   Product,
@@ -806,13 +808,13 @@ export default function ShopkeeperDashboard() {
                     />
 
                     <LocationPicker
-                      address={storeForm.watch("address")}
-                      latitude={storeForm.watch("latitude")}
-                      longitude={storeForm.watch("longitude")}
-                      onLocationChange={(data) => {
+                      address={storeForm.watch("address") || ""}
+                      latitude={parseFloat(storeForm.watch("latitude") || "0")}
+                      longitude={parseFloat(storeForm.watch("longitude") || "0")}
+                      onLocationChange={(data: any) => {
                         storeForm.setValue("address", data.address);
-                        storeForm.setValue("latitude", data.latitude);
-                        storeForm.setValue("longitude", data.longitude);
+                        storeForm.setValue("latitude", data.latitude.toString());
+                        storeForm.setValue("longitude", data.longitude.toString());
                       }}
                     />
 

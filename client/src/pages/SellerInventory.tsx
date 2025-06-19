@@ -91,7 +91,7 @@ export default function SellerInventory() {
   });
 
   // Categories query
-  const { data: categories = [] } = useQuery({
+  const { data: categories = [] } = useQuery<any[]>({
     queryKey: ["/api/categories"],
   });
 

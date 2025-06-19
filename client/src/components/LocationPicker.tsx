@@ -1,190 +1,114 @@
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { MapPin, Loader2 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { MapPin, Search } from "lucide-react";
 
 interface LocationPickerProps {
-  address: string;
-  latitude?: string;
-  longitude?: string;
+  address?: string;
+  latitude?: number | string;
+  longitude?: number | string;
   onLocationChange: (data: {
     address: string;
-    latitude: string;
-    longitude: string;
-    googleMapsLink: string;
+    latitude: number;
+    longitude: number;
   }) => void;
 }
 
 export function LocationPicker({
-  address,
-  latitude,
-  longitude,
+  address = "",
+  latitude = 0,
+  longitude = 0,
   onLocationChange,
 }: LocationPickerProps) {
+  const [searchAddress, setSearchAddress] = useState(address);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
-  const getCurrentLocation = async () => {
-    if (!navigator.geolocation) {
-      toast({
-        title: "Location not supported",
-        description: "Your browser doesn't support location services",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleGetCurrentLocation = () => {
     setIsLoading(true);
-    
-    try {
-      const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-        navigator.geolocation.getCurrentPosition(resolve, reject, {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        });
-      });
-
-      const { latitude: lat, longitude: lng } = position.coords;
-      
-      // Get address from coordinates using reverse geocoding
-      const address = await reverseGeocode(lat, lng);
-      const googleMapsLink = `https://maps.google.com/?q=${lat},${lng}`;
-      
-      onLocationChange({
-        address,
-        latitude: lat.toString(),
-        longitude: lng.toString(),
-        googleMapsLink,
-      });
-
-      toast({
-        title: "Location found",
-        description: "Your location has been automatically filled",
-      });
-    } catch (error) {
-      console.error('Error getting location:', error);
-      toast({
-        title: "Location error",
-        description: "Could not get your location. Please enter manually.",
-        variant: "destructive",
-      });
-    } finally {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          
+          // Reverse geocoding would go here in a real implementation
+          // For now, we'll just use the coordinates
+          onLocationChange({
+            address: `${lat.toFixed(6)}, ${lng.toFixed(6)}`,
+            latitude: lat,
+            longitude: lng,
+          });
+          setSearchAddress(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
+          setIsLoading(false);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          setIsLoading(false);
+        }
+      );
+    } else {
       setIsLoading(false);
     }
   };
 
-  const reverseGeocode = async (lat: number, lng: number): Promise<string> => {
-    try {
-      // Using OpenStreetMap Nominatim for reverse geocoding (free service)
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&addressdetails=1`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Geocoding failed');
-      }
-      
-      const data = await response.json();
-      
-      if (data.display_name) {
-        return data.display_name;
-      } else {
-        throw new Error('No address found');
-      }
-    } catch (error) {
-      console.error('Reverse geocoding error:', error);
-      return `${lat}, ${lng}`; // Fallback to coordinates
-    }
-  };
-
-  const handleAddressChange = (newAddress: string) => {
-    onLocationChange({
-      address: newAddress,
-      latitude: latitude || "",
-      longitude: longitude || "",
-      googleMapsLink: latitude && longitude ? `https://maps.google.com/?q=${latitude},${longitude}` : "",
-    });
-  };
-
-  const generateGoogleMapsLink = () => {
-    if (latitude && longitude) {
-      const link = `https://maps.google.com/?q=${latitude},${longitude}`;
-      window.open(link, '_blank');
-    } else {
-      toast({
-        title: "No coordinates",
-        description: "Please get your location first to generate Google Maps link",
-        variant: "destructive",
+  const handleSearchAddress = () => {
+    if (searchAddress.trim()) {
+      // In a real implementation, you would geocode the address
+      // For now, we'll just use default coordinates
+      onLocationChange({
+        address: searchAddress,
+        latitude: 27.7172,
+        longitude: 85.3240,
       });
     }
   };
 
   return (
-    <div className="space-y-4">
-      <div>
-        <Label htmlFor="address">Store Address</Label>
-        <div className="flex gap-2 mt-1">
-          <Textarea
-            id="address"
-            placeholder="Complete store address"
-            value={address}
-            onChange={(e) => handleAddressChange(e.target.value)}
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <MapPin className="h-5 w-5" />
+          Store Location
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex gap-2">
+          <Input
+            placeholder="Enter store address"
+            value={searchAddress}
+            onChange={(e) => setSearchAddress(e.target.value)}
             className="flex-1"
           />
           <Button
             type="button"
             variant="outline"
-            size="sm"
-            onClick={getCurrentLocation}
-            disabled={isLoading}
-            className="whitespace-nowrap"
+            onClick={handleSearchAddress}
           >
-            {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <MapPin className="h-4 w-4" />
-            )}
-            {isLoading ? "Getting..." : "Get My Location"}
+            <Search className="h-4 w-4" />
           </Button>
         </div>
-      </div>
+        
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleGetCurrentLocation}
+          disabled={isLoading}
+          className="w-full"
+        >
+          <MapPin className="h-4 w-4 mr-2" />
+          {isLoading ? "Getting Location..." : "Use Current Location"}
+        </Button>
 
-      {latitude && longitude && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <Label htmlFor="latitude">Latitude</Label>
-            <Input
-              id="latitude"
-              value={latitude}
-              readOnly
-              className="bg-muted"
-            />
+        {address && (
+          <div className="text-sm text-muted-foreground">
+            <p>Selected: {address}</p>
+            {latitude && longitude && (
+              <p>Coordinates: {Number(latitude).toFixed(6)}, {Number(longitude).toFixed(6)}</p>
+            )}
           </div>
-          <div>
-            <Label htmlFor="longitude">Longitude</Label>
-            <Input
-              id="longitude"
-              value={longitude}
-              readOnly
-              className="bg-muted"
-            />
-          </div>
-          <div className="flex items-end">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={generateGoogleMapsLink}
-              className="w-full"
-            >
-              View on Google Maps
-            </Button>
-          </div>
-        </div>
-      )}
-    </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

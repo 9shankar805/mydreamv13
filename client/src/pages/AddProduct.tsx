@@ -341,6 +341,7 @@ export default function AddProduct() {
                         <FormControl>
                           <SelectTrigger className="h-11">
                             <SelectValue placeholder="Electronics" />
+                            
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>

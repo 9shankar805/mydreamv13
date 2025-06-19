@@ -21,7 +21,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -30,47 +29,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { useToast } from "@/hooks/use-toast";
-import ImageUpload from "@/components/ImageUpload";
-
-const productSchema = z.object({
-  name: z.string().min(1, "Product name is required"),
-  description: z.string().optional(),
-  price: z.string().min(1, "Price is required"),
-  originalPrice: z.string().optional(),
-  categoryId: z.number().min(1, "Category is required"),
-  stock: z.number().min(0, "Stock must be 0 or greater"),
-  imageUrl: z.string().optional(),
-  images: z
-    .array(z.string())
-    .min(1, "At least 1 image is required")
-    .max(6, "Maximum 6 images allowed"),
-  isFastSell: z.boolean().default(false),
-  isOnOffer: z.boolean().default(false),
-  offerPercentage: z.number().min(0).max(100).default(0),
-  offerEndDate: z.string().optional(),
-  // Food-specific fields
-  preparationTime: z.string().optional(),
-  ingredients: z.array(z.string()).default([]),
-  allergens: z.array(z.string()).default([]),
-  spiceLevel: z.string().optional(),
-  isVegetarian: z.boolean().default(false),
-  isVegan: z.boolean().default(false),
-  nutritionInfo: z.string().optional(),
-});
-
-type ProductForm = z.infer<typeof productSchema>;
+import AddProductForm from "@/components/AddProductForm";
 
 interface Product {
   id: number;
@@ -93,7 +53,7 @@ interface Product {
   isVegan?: boolean;
 }
 
-export default function InventoryManagement() {
+export default function SellerInventory() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
@@ -104,30 +64,30 @@ export default function InventoryManagement() {
 
   const { user } = useAuth();
 
-  // Form for adding/editing products
-  const productForm = useForm<ProductForm>({
-    resolver: zodResolver(productSchema),
-    defaultValues: {
-      name: "",
-      description: "",
-      price: "",
-      originalPrice: "",
-      categoryId: 1,
-      stock: 0,
-      imageUrl: "",
-      images: [],
-      isFastSell: false,
-      isOnOffer: false,
-      offerPercentage: 0,
-      offerEndDate: "",
-      preparationTime: "",
-      ingredients: [],
-      allergens: [],
-      spiceLevel: "",
-      isVegetarian: false,
-      isVegan: false,
-      nutritionInfo: "",
+  // Store query
+  const { data: stores = [], isLoading: storesLoading, error: storesError } = useQuery({
+    queryKey: [`/api/stores/owner`, user?.id],
+    queryFn: async () => {
+      if (!user?.id) return [];
+      const response = await fetch(`/api/stores/owner/${user.id}`);
+      if (!response.ok) throw new Error('Failed to fetch stores');
+      return response.json();
     },
+    enabled: !!user,
+  });
+
+  const currentStore = stores[0]; // Assuming one store per shopkeeper
+
+  // Products query
+  const { data: products = [], isLoading: productsLoading } = useQuery<Product[]>({
+    queryKey: [`/api/products/store/${currentStore?.id}`],
+    queryFn: async () => {
+      if (!currentStore?.id) return [];
+      const response = await fetch(`/api/products/store/${currentStore.id}`);
+      if (!response.ok) throw new Error('Failed to fetch products');
+      return response.json();
+    },
+    enabled: !!currentStore,
   });
 
   // Categories query
@@ -135,184 +95,20 @@ export default function InventoryManagement() {
     queryKey: ["/api/categories"],
   });
 
-  // Store query to get current store info
-  const { data: stores = [], isLoading: storesLoading, error: storesError } = useQuery({
-    queryKey: [`/api/stores/owner`, user?.id],
-    queryFn: async () => {
-      if (!user?.id) return [];
-      
-      try {
-        const response = await fetch(`/api/stores/owner/${user.id}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            return []; // No stores found
-          }
-          throw new Error(`Failed to fetch stores: ${response.status}`);
-        }
-        const storesData = await response.json();
-        console.log('Stores fetched for user:', user.id, 'Count:', storesData.length);
-        return Array.isArray(storesData) ? storesData : [];
-      } catch (error) {
-        console.error('Store fetch error:', error);
-        throw error;
-      }
-    },
-    enabled: !!user && user.role === 'shopkeeper' && user.status === 'active',
-  });
-
-  const currentStore = stores[0]; // Assuming one store per shopkeeper
-
-  // Products query
-  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<
-    Product[]
-  >({
-    queryKey: [`/api/products/store/${currentStore?.id}`],
-    queryFn: async () => {
-      if (!currentStore?.id) return [];
-      
-      try {
-        const response = await fetch(`/api/products/store/${currentStore.id}`);
-        if (!response.ok) {
-          if (response.status === 404) {
-            return []; // No products found
-          }
-          throw new Error(`Failed to fetch store products: ${response.status}`);
-        }
-        const productsData = await response.json();
-        console.log('Products fetched for store:', currentStore.id, 'Count:', productsData.length);
-        return Array.isArray(productsData) ? productsData : [];
-      } catch (error) {
-        console.error('Products fetch error:', error);
-        throw error;
-      }
-    },
-    enabled: !!currentStore,
-  });
-
-  // Filter products
+  // Filter products based on search and filters
   const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name
-      .toLowerCase()
-      .includes(searchTerm.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "all" ||
-      product.categoryId.toString() === selectedCategory;
-    const matchesStock =
-      stockFilter === "all" ||
-      (stockFilter === "low" && product.stock <= 5) ||
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || product.categoryId?.toString() === selectedCategory;
+    const matchesStock = stockFilter === "all" || 
+      (stockFilter === "low" && product.stock < 10) ||
       (stockFilter === "out" && product.stock === 0) ||
-      (stockFilter === "available" && product.stock > 5);
-
+      (stockFilter === "in" && product.stock > 0);
+    
     return matchesSearch && matchesCategory && matchesStock;
   });
 
-  // Low stock products
-  const lowStockProducts = products.filter(
-    (product) => product.stock <= 5 && product.stock > 0,
-  );
-  const outOfStockProducts = products.filter((product) => product.stock === 0);
-
-  // Product management functions
-  const handleAddProduct = async (data: ProductForm) => {
-    if (!currentStore) return;
-
-    try {
-      const productData = {
-        ...data,
-        storeId: currentStore.id,
-        price: data.price,
-        originalPrice: data.originalPrice || undefined,
-        images: data.images || [],
-        imageUrl: data.images?.[0] || undefined,
-        isFastSell: data.isFastSell || false,
-        isOnOffer: data.isOnOffer || false,
-        offerPercentage: data.offerPercentage || 0,
-        offerEndDate: data.offerEndDate || undefined,
-        productType:
-          currentStore.storeType === "restaurant" ? "food" : "retail",
-        // Food-specific fields for restaurants
-        preparationTime:
-          currentStore.storeType === "restaurant"
-            ? data.preparationTime || null
-            : null,
-        ingredients:
-          currentStore.storeType === "restaurant" ? data.ingredients || [] : [],
-        allergens:
-          currentStore.storeType === "restaurant" ? data.allergens || [] : [],
-        spiceLevel:
-          currentStore.storeType === "restaurant"
-            ? data.spiceLevel || null
-            : null,
-        isVegetarian:
-          currentStore.storeType === "restaurant"
-            ? data.isVegetarian || false
-            : false,
-        isVegan:
-          currentStore.storeType === "restaurant"
-            ? data.isVegan || false
-            : false,
-        nutritionInfo:
-          currentStore.storeType === "restaurant"
-            ? data.nutritionInfo || null
-            : null,
-      };
-
-      if (editingProduct) {
-        const response = await fetch(`/api/products/${editingProduct.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(productData),
-        });
-        if (!response.ok) throw new Error("Failed to update product");
-        toast({ title: "Product updated successfully" });
-      } else {
-        const response = await fetch("/api/products", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(productData),
-        });
-        if (!response.ok) throw new Error("Failed to create product");
-        toast({ title: "Product added successfully" });
-      }
-
-      productForm.reset();
-      setEditingProduct(null);
-      setShowAddProduct(false);
-      // Invalidate queries to refresh data
-      queryClient.invalidateQueries({
-        queryKey: [`/api/products/store/${currentStore.id}`],
-      });
-      queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description:
-          error instanceof Error ? error.message : "Failed to save product",
-        variant: "destructive",
-      });
-    }
-  };
-
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
-    productForm.reset({
-      name: product.name,
-      description: product.description || "",
-      price: product.price,
-      originalPrice: product.originalPrice || "",
-      categoryId: product.categoryId || 1,
-      stock: product.stock || 0,
-      imageUrl: product.images?.[0] || "",
-      images: product.images || [],
-      isFastSell: product.isFastSell || false,
-      isOnOffer: product.isOnOffer || false,
-      offerPercentage: product.offerPercentage || 0,
-      offerEndDate: "",
-      preparationTime: product.preparationTime || "",
-      spiceLevel: product.spiceLevel || "",
-      isVegetarian: product.isVegetarian || false,
-      isVegan: product.isVegan || false,
-    });
     setShowAddProduct(true);
   };
 
@@ -365,7 +161,6 @@ export default function InventoryManagement() {
     );
   }
 
-  // Check if shopkeeper is approved by admin
   if (user.role === 'shopkeeper' && user.status !== 'active') {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -393,7 +188,6 @@ export default function InventoryManagement() {
     );
   }
 
-  // Handle loading states
   if (storesLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -407,7 +201,6 @@ export default function InventoryManagement() {
     );
   }
 
-  // Handle store errors
   if (storesError) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
@@ -502,16 +295,17 @@ export default function InventoryManagement() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
               <CardTitle className="text-xs sm:text-sm font-medium">
-                Low Stock Alert
+                Low Stock Items
               </CardTitle>
-              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-orange-500" />
+              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
-              <div className="text-lg sm:text-2xl font-bold text-orange-600">
-                {lowStockProducts.length}
+              <div className="text-lg sm:text-2xl font-bold">
+                {products.filter(p => p.stock < 10).length}
               </div>
               <p className="text-xs text-muted-foreground">
-                Items with ≤5 units remaining
+                <TrendingDown className="h-3 w-3 inline mr-1" />
+                Need restocking
               </p>
             </CardContent>
           </Card>
@@ -521,163 +315,164 @@ export default function InventoryManagement() {
               <CardTitle className="text-xs sm:text-sm font-medium">
                 Out of Stock
               </CardTitle>
-              <TrendingDown className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
+              <AlertTriangle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />
             </CardHeader>
             <CardContent className="p-3 pt-0 sm:p-6 sm:pt-0">
               <div className="text-lg sm:text-2xl font-bold text-red-600">
-                {outOfStockProducts.length}
+                {products.filter(p => p.stock === 0).length}
               </div>
               <p className="text-xs text-muted-foreground">
-                Items requiring restocking
+                Unavailable items
               </p>
             </CardContent>
           </Card>
         </div>
 
         {/* Filters and Search */}
-        <Card className="mb-4 sm:mb-6">
-          <CardHeader className="p-3 sm:p-6">
-            <CardTitle className="text-lg sm:text-xl">Product Management</CardTitle>
-          </CardHeader>
+        <Card className="mb-6">
           <CardContent className="p-3 sm:p-6">
-            <div className="flex flex-col gap-3 sm:gap-4 mb-4 sm:mb-6">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
               <div className="flex-1">
                 <Input
                   placeholder="Search products..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full text-sm"
+                  className="w-full"
                 />
               </div>
-              <div className="flex gap-2 sm:gap-4 flex-col sm:flex-row">
-                <Select
-                  value={selectedCategory}
-                  onValueChange={setSelectedCategory}
-                >
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="All Categories" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
-                    {Array.isArray(categories) &&
-                      categories.map((category: any) => (
-                        <SelectItem
-                          key={category.id}
-                          value={category.id.toString()}
-                        >
-                          {category.name}
-                        </SelectItem>
-                      ))}
-                  </SelectContent>
-                </Select>
-                <Select value={stockFilter} onValueChange={setStockFilter}>
-                  <SelectTrigger className="w-full sm:w-48">
-                    <SelectValue placeholder="Stock Status" />
-                  </SelectTrigger>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Categories</SelectItem>
+                  {categories.map((category: any) => (
+                    <SelectItem key={category.id} value={category.id.toString()}>
+                      {category.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select value={stockFilter} onValueChange={setStockFilter}>
+                <SelectTrigger className="w-full sm:w-48">
+                  <SelectValue placeholder="Stock Status" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Stock</SelectItem>
-                  <SelectItem value="available">Available ({">"}5)</SelectItem>
-                  <SelectItem value="low">Low Stock (≤5)</SelectItem>
+                  <SelectItem value="in">In Stock</SelectItem>
+                  <SelectItem value="low">Low Stock</SelectItem>
                   <SelectItem value="out">Out of Stock</SelectItem>
                 </SelectContent>
-                </Select>
-              </div>
+              </Select>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Products List */}
-            <div className="space-y-3 sm:space-y-4">
-              {filteredProducts.length > 0 ? (
-                filteredProducts.map((product) => (
-                  <div
-                    key={product.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 border rounded-lg hover:shadow-md transition-shadow gap-3 sm:gap-0"
+        {/* Products List */}
+        <Card>
+          <CardHeader className="p-3 sm:p-6">
+            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
+              <Package className="h-4 w-4 sm:h-5 sm:w-5" />
+              Products ({filteredProducts.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto">
+              {filteredProducts.length === 0 ? (
+                <div className="text-center py-8 px-4">
+                  <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <p className="text-muted-foreground">
+                    {searchTerm || selectedCategory !== "all" || stockFilter !== "all"
+                      ? "No products match your filters"
+                      : "No products added yet"}
+                  </p>
+                  <Button
+                    onClick={() => setShowAddProduct(true)}
+                    className="mt-4"
                   >
-                    <div className="flex items-center space-x-3 sm:space-x-4">
-                      <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        {product.images?.[0] ? (
-                          <img
-                            src={product.images[0]}
-                            alt={product.name}
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <Package className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-medium text-sm sm:text-base truncate">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          ₹{product.price}
-                        </p>
-                        <div className="flex items-center gap-2 mt-1 flex-wrap">
-                          <Badge
-                            variant={
-                              product.stock === 0
-                                ? "destructive"
-                                : product.stock <= 5
-                                  ? "secondary"
-                                  : "default"
-                            }
-                            className="text-xs"
-                          >
-                            Stock: {product.stock}
-                          </Badge>
-                          {product.isOnOffer && (
-                            <Badge variant="outline" className="text-green-600 text-xs">
-                              {product.offerPercentage}% OFF
-                            </Badge>
-                          )}
-                          {product.isFastSell && (
-                            <Badge variant="outline" className="text-blue-600 text-xs">
-                              Fast Sell
-                            </Badge>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Your First Product
+                  </Button>
+                </div>
+              ) : (
+                <div className="overflow-hidden">
+                  {filteredProducts.map((product) => (
+                    <div
+                      key={product.id}
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-6 border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+                    >
+                      <div className="flex items-start sm:items-center space-x-3 sm:space-x-4 flex-1 mb-3 sm:mb-0">
+                        <div className="w-12 h-12 sm:w-16 sm:h-16 bg-gray-200 rounded-lg flex-shrink-0 overflow-hidden">
+                          {product.images?.[0] ? (
+                            <img
+                              src={product.images[0]}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <Package className="h-4 w-4 sm:h-6 sm:w-6 text-gray-400" />
+                            </div>
                           )}
                         </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-medium text-sm sm:text-base truncate">
+                            {product.name}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
+                            {product.description}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 mt-1">
+                            <span className="text-xs sm:text-sm font-medium">
+                              ${product.price}
+                            </span>
+                            <Badge
+                              variant={
+                                product.stock === 0
+                                  ? "destructive"
+                                  : product.stock < 10
+                                  ? "secondary"
+                                  : "default"
+                              }
+                              className="text-xs"
+                            >
+                              Stock: {product.stock}
+                            </Badge>
+                            {product.isFastSell && (
+                              <Badge variant="outline" className="text-xs">
+                                Fast Sell
+                              </Badge>
+                            )}
+                            {product.isOnOffer && (
+                              <Badge variant="secondary" className="text-xs">
+                                On Offer
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-2 w-full sm:w-auto">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEditProduct(product)}
+                          className="flex-1 sm:flex-none"
+                        >
+                          <Edit className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          Edit
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteProduct(product.id)}
+                          className="text-red-600 hover:text-red-700 flex-1 sm:flex-none"
+                        >
+                          <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                          Delete
+                        </Button>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-2 justify-end sm:justify-start">
-                      <Button
-                        onClick={() => handleEditProduct(product)}
-                        variant="outline"
-                        size="sm"
-                        className="flex-1 sm:flex-none"
-                      >
-                        <Edit className="h-4 w-4" />
-                        <span className="ml-1 sm:hidden">Edit</span>
-                      </Button>
-                      <Button
-                        onClick={() => handleDeleteProduct(product.id)}
-                        variant="destructive"
-                        size="sm"
-                        className="flex-1 sm:flex-none"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        <span className="ml-1 sm:hidden">Delete</span>
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-6 sm:py-8">
-                  <Package className="h-10 w-10 sm:h-12 sm:w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-muted-foreground text-sm sm:text-base">
-                    {searchTerm ||
-                    selectedCategory !== "all" ||
-                    stockFilter !== "all"
-                      ? "No products match your filters"
-                      : "No products in inventory"}
-                  </p>
-                  {!showAddProduct && (
-                    <Button
-                      onClick={() => setShowAddProduct(true)}
-                      className="mt-4 text-sm"
-                    >
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Your First Product
-                    </Button>
-                  )}
+                  ))}
                 </div>
               )}
             </div>
@@ -686,189 +481,18 @@ export default function InventoryManagement() {
 
         {/* Add/Edit Product Form */}
         {showAddProduct && (
-          <Card>
-            <CardHeader className="p-3 sm:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-                <Package className="h-4 w-4 sm:h-5 sm:w-5" />
-                {editingProduct ? "Edit Product" : "Add New Product"}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-3 sm:p-6">
-              <Form {...productForm}>
-                <form
-                  onSubmit={productForm.handleSubmit(handleAddProduct)}
-                  className="space-y-6"
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                    <FormField
-                      control={productForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Product Name *</FormLabel>
-                          <FormControl>
-                            <Input
-                              placeholder="Enter product name"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={productForm.control}
-                      name="categoryId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Category *</FormLabel>
-                          <Select
-                            onValueChange={(value) =>
-                              field.onChange(parseInt(value))
-                            }
-                            defaultValue={field.value?.toString()}
-                          >
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select category" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {Array.isArray(categories) &&
-                                categories.map((category: any) => (
-                                  <SelectItem
-                                    key={category.id}
-                                    value={category.id.toString()}
-                                  >
-                                    {category.name}
-                                  </SelectItem>
-                                ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={productForm.control}
-                    name="description"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Description</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            placeholder="Enter product description"
-                            className="min-h-24"
-                            {...field}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 sm:gap-6">
-                    <FormField
-                      control={productForm.control}
-                      name="price"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Price *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="0.00"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={productForm.control}
-                      name="originalPrice"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Original Price</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="0.00"
-                              {...field}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    <FormField
-                      control={productForm.control}
-                      name="stock"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Stock Quantity *</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="number"
-                              placeholder="Enter quantity"
-                              {...field}
-                              onChange={(e) =>
-                                field.onChange(parseInt(e.target.value) || 0)
-                              }
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  <FormField
-                    control={productForm.control}
-                    name="images"
-                    render={({ field }) => (
-                      <FormItem>
-                        <ImageUpload
-                          label="Product Images"
-                          maxImages={6}
-                          minImages={1}
-                          onImagesChange={field.onChange}
-                          initialImages={field.value || []}
-                          className="col-span-full"
-                        />
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        setShowAddProduct(false);
-                        setEditingProduct(null);
-                        productForm.reset();
-                      }}
-                      className="order-2 sm:order-1"
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" className="order-1 sm:order-2">
-                      <Plus className="h-4 w-4 mr-2" />
-                      {editingProduct ? "Update Product" : "Add Product"}
-                    </Button>
-                  </div>
-                </form>
-              </Form>
-            </CardContent>
-          </Card>
+          <AddProductForm
+            editingProduct={editingProduct}
+            onSuccess={() => {
+              setShowAddProduct(false);
+              setEditingProduct(null);
+            }}
+            onCancel={() => {
+              setShowAddProduct(false);
+              setEditingProduct(null);
+            }}
+            showHeader={true}
+          />
         )}
       </div>
     </div>

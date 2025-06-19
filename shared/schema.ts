@@ -787,18 +787,10 @@ export const insertStoreSchema = createInsertSchema(stores).omit({
   featured: true,
   isActive: true,
 }).extend({
-  minimumOrder: z.union([z.string(), z.number()]).optional().transform((val) => 
-    val !== undefined && val !== null && val !== "" ? String(val) : undefined
-  ),
-  deliveryFee: z.union([z.string(), z.number()]).optional().transform((val) => 
-    val !== undefined && val !== null && val !== "" ? String(val) : undefined
-  ),
-  latitude: z.union([z.string(), z.number()]).optional().transform((val) => 
-    val !== undefined && val !== null && val !== "" ? String(val) : undefined
-  ),
-  longitude: z.union([z.string(), z.number()]).optional().transform((val) => 
-    val !== undefined && val !== null && val !== "" ? String(val) : undefined
-  ),
+  minimumOrder: z.string().nullable().optional(),
+  deliveryFee: z.string().nullable().optional(),
+  latitude: z.string().nullable().optional(),
+  longitude: z.string().nullable().optional(),
 });
 
 export const insertCategorySchema = createInsertSchema(categories).omit({

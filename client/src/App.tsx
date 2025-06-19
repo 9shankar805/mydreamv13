@@ -121,6 +121,7 @@ function AppRouter() {
 
         {/* Real-time Tracking Demo */}
         <Route path="/tracking-demo" component={TrackingDemo} />
+        <Route path="/download" component={lazy(() => import("./pages/Download"))} />
         <Route path="/delete-account" component={lazy(() => import("./pages/DeleteAccount"))} />
 
         <Route component={NotFound} />

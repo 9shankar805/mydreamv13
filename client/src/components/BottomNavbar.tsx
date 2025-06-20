@@ -131,7 +131,21 @@ export default function BottomNavbar() {
         </div>
       </nav>
 
-
+      {/* Floating Add Product Button for Shopkeepers */}
+      {user?.role === "shopkeeper" && (
+        <Link
+          href="/seller/dashboard"
+          className="fixed bottom-20 right-4 bg-primary hover:bg-primary/90 text-white rounded-full p-3 shadow-lg z-50 md:hidden"
+          onClick={() => {
+            setTimeout(() => {
+              const event = new CustomEvent('navigate-to-add-product');
+              window.dispatchEvent(event);
+            }, 100);
+          }}
+        >
+          <Plus className="h-6 w-6" />
+        </Link>
+      )}
     </>
   );
 }

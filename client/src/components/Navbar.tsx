@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { Link, useLocation } from "wouter";
-import { ShoppingCart, User, Menu, X, Store, Heart, MapPin, Shield, Home, Package, LogOut, Tag, UtensilsCrossed, ChefHat, ShoppingBag, Bell } from "lucide-react";
+import { ShoppingCart, User, Menu, X, Store, Heart, MapPin, Shield, Home, Package, LogOut, Tag, UtensilsCrossed, ChefHat, ShoppingBag, Bell, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import { useAppMode } from "@/hooks/useAppMode";
 import { useQuery } from "@tanstack/react-query";
 import SearchWithSuggestions from "@/components/SearchWithSuggestions";
 import NotificationCenter from "@/components/NotificationCenter";
+import AddProductForm from "@/components/AddProductForm";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,6 +34,7 @@ interface Notification {
 export default function Navbar() {
   const [, setLocation] = useLocation();
   const [isMobileNotificationOpen, setIsMobileNotificationOpen] = useState(false);
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const { user, logout } = useUser();
   const { cartItems } = useCart();
   const { mode, setMode } = useAppMode();
@@ -182,6 +185,13 @@ export default function Navbar() {
                   <Tag className="h-3.5 w-3.5" />
                   <span>Promotions</span>
                 </Link>
+                <button 
+                  onClick={() => setIsAddProductOpen(true)}
+                  className="flex items-center space-x-0.5 hover:text-accent transition-colors text-white"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  <span>Add Product</span>
+                </button>
                 <Link href="/account" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
                   <User className="h-3.5 w-3.5" />
                   <span>Account</span>
@@ -510,6 +520,20 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Add Product Dialog */}
+      <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add New Product</DialogTitle>
+          </DialogHeader>
+          <AddProductForm
+            onSuccess={() => setIsAddProductOpen(false)}
+            onCancel={() => setIsAddProductOpen(false)}
+            showHeader={false}
+          />
+        </DialogContent>
+      </Dialog>
     </nav>
   );
 }

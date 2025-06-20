@@ -16,6 +16,7 @@ import ModeSwiper from "@/components/ModeSwiper";
 import MobileNotificationBar from "@/components/MobileNotificationBar";
 import NotificationTestButton from "@/components/NotificationTestButton";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import GlobalAddProduct from "@/components/GlobalAddProduct";
 import Homepage from "@/pages/Homepage";
 import FoodHomepage from "@/pages/FoodHomepage";
 import Products from "@/pages/Products";
@@ -208,6 +209,9 @@ function AppContent() {
                   </ErrorBoundary>
                   <ErrorBoundary>
                     <NotificationTestButton />
+                  </ErrorBoundary>
+                  <ErrorBoundary>
+                    <GlobalAddProduct />
                   </ErrorBoundary>
                 </div>
                 <Toaster />

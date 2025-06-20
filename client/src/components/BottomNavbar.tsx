@@ -1,12 +1,16 @@
-import { Home, Package, Store, User, MapPin, ShoppingCart, Tag, UtensilsCrossed, ChefHat } from "lucide-react";
+import { Home, Package, Store, User, MapPin, ShoppingCart, Tag, UtensilsCrossed, ChefHat, Plus } from "lucide-react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppMode } from "@/hooks/useAppMode";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import AddProductForm from "@/components/AddProductForm";
 
 export default function BottomNavbar() {
   const [location] = useLocation();
+  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const { user } = useAuth();
   const { mode } = useAppMode();
   const { user: currentUser } = useUser();
@@ -107,27 +111,55 @@ export default function BottomNavbar() {
   const navItems = user?.role === "shopkeeper" ? sellerNavItems : customerNavItems;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50 md:hidden safe-area-inset-bottom">
-      <div className="flex items-center justify-around h-16 px-4 pb-safe">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex flex-col items-center justify-center space-y-1 py-2 px-1 sm:px-3 rounded-lg transition-colors min-w-0 flex-1",
-                item.active
-                  ? "text-primary bg-primary/10"
-                  : "text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-primary/5"
-              )}
-            >
-              <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
-              <span className="text-xs font-medium truncate">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </nav>
+    <>
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-50 md:hidden safe-area-inset-bottom">
+        <div className="flex items-center justify-around h-16 px-4 pb-safe">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center space-y-1 py-2 px-1 sm:px-3 rounded-lg transition-colors min-w-0 flex-1",
+                  item.active
+                    ? "text-primary bg-primary/10"
+                    : "text-gray-600 dark:text-gray-400 hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <span className="text-xs font-medium truncate">{item.label}</span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+
+      {/* Floating Add Product Button for Shopkeepers */}
+      {user?.role === "shopkeeper" && (
+        <>
+          <button
+            onClick={() => setIsAddProductOpen(true)}
+            className="fixed bottom-20 right-4 bg-primary hover:bg-primary/90 text-white rounded-full p-3 shadow-lg z-50 md:hidden"
+          >
+            <Plus className="h-6 w-6" />
+          </button>
+
+          {/* Add Product Dialog */}
+          <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
+            <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Add New Product</DialogTitle>
+              </DialogHeader>
+              <AddProductForm
+                onSuccess={() => setIsAddProductOpen(false)}
+                onCancel={() => setIsAddProductOpen(false)}
+                showHeader={false}
+              />
+            </DialogContent>
+          </Dialog>
+        </>
+      )}
+    </>
   );
 }

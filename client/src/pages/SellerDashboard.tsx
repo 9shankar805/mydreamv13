@@ -45,7 +45,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
 import { useUser } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiPost, apiPut, apiDelete } from "@/lib/api";
@@ -123,7 +123,7 @@ export default function ShopkeeperDashboard() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(
     null,
   );
-  const [isQuickAddProductOpen, setIsQuickAddProductOpen] = useState(false);
+
   const { user } = useUser();
   const { toast } = useToast();
 
@@ -523,7 +523,7 @@ export default function ShopkeeperDashboard() {
           </div>
           {currentStore && (
             <Button 
-              onClick={() => setIsQuickAddProductOpen(true)}
+              onClick={() => setActiveTab("add-product")}
               className="bg-primary hover:bg-primary/90"
             >
               <Plus className="h-4 w-4 mr-2" />
@@ -695,7 +695,7 @@ export default function ShopkeeperDashboard() {
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <Button 
-                      onClick={() => setIsQuickAddProductOpen(true)}
+                      onClick={() => setActiveTab("add-product")}
                       className="flex items-center justify-center space-x-2 h-12"
                     >
                       <Plus className="h-5 w-5" />
@@ -1839,19 +1839,7 @@ export default function ShopkeeperDashboard() {
           </TabsContent>
         </Tabs>
 
-        {/* Quick Add Product Dialog */}
-        <Dialog open={isQuickAddProductOpen} onOpenChange={setIsQuickAddProductOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Quick Add Product</DialogTitle>
-            </DialogHeader>
-            <AddProductForm
-              onSuccess={() => setIsQuickAddProductOpen(false)}
-              onCancel={() => setIsQuickAddProductOpen(false)}
-              showHeader={false}
-            />
-          </DialogContent>
-        </Dialog>
+
       </div>
     </div>
   );

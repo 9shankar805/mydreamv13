@@ -137,7 +137,7 @@ export default function DownloadPage() {
                   </div>
                   <div>
                     <p className="font-medium">Enable Unknown Sources</p>
-                    <p className="text-sm text-gray-600">Go to Settings > Security > Unknown Sources</p>
+                    <p className="text-sm text-gray-600">Go to Settings &gt; Security &gt; Unknown Sources</p>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">

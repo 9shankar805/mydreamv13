@@ -4,13 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAppMode } from "@/hooks/useAppMode";
 import { cn } from "@/lib/utils";
 import { useUser } from "@/hooks/use-user";
-import { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import AddProductForm from "@/components/AddProductForm";
 
 export default function BottomNavbar() {
   const [location] = useLocation();
-  const [isAddProductOpen, setIsAddProductOpen] = useState(false);
   const { user } = useAuth();
   const { mode } = useAppMode();
   const { user: currentUser } = useUser();
@@ -135,31 +131,7 @@ export default function BottomNavbar() {
         </div>
       </nav>
 
-      {/* Floating Add Product Button for Shopkeepers */}
-      {user?.role === "shopkeeper" && (
-        <>
-          <button
-            onClick={() => setIsAddProductOpen(true)}
-            className="fixed bottom-20 right-4 bg-primary hover:bg-primary/90 text-white rounded-full p-3 shadow-lg z-50 md:hidden"
-          >
-            <Plus className="h-6 w-6" />
-          </button>
 
-          {/* Add Product Dialog */}
-          <Dialog open={isAddProductOpen} onOpenChange={setIsAddProductOpen}>
-            <DialogContent className="max-w-[95vw] max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle>Add New Product</DialogTitle>
-              </DialogHeader>
-              <AddProductForm
-                onSuccess={() => setIsAddProductOpen(false)}
-                onCancel={() => setIsAddProductOpen(false)}
-                showHeader={false}
-              />
-            </DialogContent>
-          </Dialog>
-        </>
-      )}
     </>
   );
 }

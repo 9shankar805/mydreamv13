@@ -45,6 +45,7 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useUser } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { apiPost, apiPut, apiDelete } from "@/lib/api";
@@ -122,6 +123,7 @@ export default function ShopkeeperDashboard() {
   const [selectedDeliveryId, setSelectedDeliveryId] = useState<number | null>(
     null,
   );
+  const [isQuickAddProductOpen, setIsQuickAddProductOpen] = useState(false);
   const { user } = useUser();
   const { toast } = useToast();
 
@@ -519,6 +521,15 @@ export default function ShopkeeperDashboard() {
                 : "Manage your store"}
             </p>
           </div>
+          {currentStore && (
+            <Button 
+              onClick={() => setIsQuickAddProductOpen(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Add Product
+            </Button>
+          )}
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -674,6 +685,42 @@ export default function ShopkeeperDashboard() {
                 </CardContent>
               </Card>
             </div>
+
+            {/* Quick Actions */}
+            {currentStore && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Button 
+                      onClick={() => setIsQuickAddProductOpen(true)}
+                      className="flex items-center justify-center space-x-2 h-12"
+                    >
+                      <Plus className="h-5 w-5" />
+                      <span>Add New Product</span>
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab("orders")}
+                      variant="outline"
+                      className="flex items-center justify-center space-x-2 h-12"
+                    >
+                      <ShoppingCart className="h-5 w-5" />
+                      <span>View Orders</span>
+                    </Button>
+                    <Button 
+                      onClick={() => setActiveTab("products")}
+                      variant="outline"
+                      className="flex items-center justify-center space-x-2 h-12"
+                    >
+                      <Package className="h-5 w-5" />
+                      <span>Manage Inventory</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
             {/* Recent Orders */}
             <Card>
@@ -1791,6 +1838,20 @@ export default function ShopkeeperDashboard() {
             </Card>
           </TabsContent>
         </Tabs>
+
+        {/* Quick Add Product Dialog */}
+        <Dialog open={isQuickAddProductOpen} onOpenChange={setIsQuickAddProductOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Quick Add Product</DialogTitle>
+            </DialogHeader>
+            <AddProductForm
+              onSuccess={() => setIsQuickAddProductOpen(false)}
+              onCancel={() => setIsQuickAddProductOpen(false)}
+              showHeader={false}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );

@@ -1240,7 +1240,7 @@ export default function ShopkeeperDashboard() {
                                     </SelectTrigger>
                                   </FormControl>
                                   <SelectContent>
-                                    <SelectItem value="">Not Applicable</SelectItem>
+                                    <SelectItem value="none">Not Applicable</SelectItem>
                                     <SelectItem value="mild">Mild</SelectItem>
                                     <SelectItem value="medium">Medium</SelectItem>
                                     <SelectItem value="hot">Hot</SelectItem>

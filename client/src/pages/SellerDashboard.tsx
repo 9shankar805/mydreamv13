@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -126,6 +126,18 @@ export default function ShopkeeperDashboard() {
 
   const { user } = useUser();
   const { toast } = useToast();
+
+  // Listen for navigation events from navbar
+  useEffect(() => {
+    const handleNavigateToAddProduct = () => {
+      setActiveTab("add-product");
+    };
+
+    window.addEventListener('navigate-to-add-product', handleNavigateToAddProduct);
+    return () => {
+      window.removeEventListener('navigate-to-add-product', handleNavigateToAddProduct);
+    };
+  }, []);
 
   // Queries
   const { data: stores = [] } = useQuery<StoreType[]>({

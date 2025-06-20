@@ -182,10 +182,20 @@ export default function Navbar() {
                   <Tag className="h-3.5 w-3.5" />
                   <span>Promotions</span>
                 </Link>
-                <Link href="/seller/dashboard" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
+                <button 
+                  onClick={() => {
+                    setLocation("/seller/dashboard");
+                    // Small delay to ensure navigation happens first
+                    setTimeout(() => {
+                      const event = new CustomEvent('navigate-to-add-product');
+                      window.dispatchEvent(event);
+                    }, 100);
+                  }}
+                  className="flex items-center space-x-0.5 hover:text-accent transition-colors text-white"
+                >
                   <Plus className="h-3.5 w-3.5" />
                   <span>Add Product</span>
-                </Link>
+                </button>
                 <Link href="/account" className="flex items-center space-x-0.5 hover:text-accent transition-colors">
                   <User className="h-3.5 w-3.5" />
                   <span>Account</span>

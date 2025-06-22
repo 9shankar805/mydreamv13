@@ -177,8 +177,15 @@ export default function ShopkeeperDashboard() {
     refetchOnWindowFocus: true,
   });
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return response.json();
+    },
+    retry: 3,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Query for active delivery assignments for this store

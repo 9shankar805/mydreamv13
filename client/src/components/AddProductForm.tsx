@@ -76,8 +76,15 @@ export default function AddProductForm({
   const [newAllergen, setNewAllergen] = useState("");
 
   // Categories query
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return response.json();
+    },
+    retry: 3,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Store query to get current store info

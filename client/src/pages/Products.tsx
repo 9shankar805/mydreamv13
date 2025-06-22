@@ -55,6 +55,11 @@ export default function Products() {
 
   const { data: categories = [], error: categoriesError, refetch: refetchCategories } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return response.json();
+    },
     retry: 3,
     staleTime: 10 * 60 * 1000,
   });

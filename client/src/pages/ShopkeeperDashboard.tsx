@@ -116,7 +116,7 @@ export default function ShopkeeperDashboard() {
 
   const currentStore = stores[0]; // Assuming one store per shopkeeper
 
-  const { data: products = [] } = useQuery<Product[]>({
+  const { data: products = [], isLoading: productsLoading, error: productsError } = useQuery<Product[]>({
     queryKey: [`/api/products/store/${currentStore?.id}`],
     queryFn: async () => {
       if (!currentStore?.id) return [];
@@ -127,7 +127,7 @@ export default function ShopkeeperDashboard() {
     enabled: !!currentStore,
   });
 
-  const { data: orders = [] } = useQuery<(Order & { items: OrderItem[] })[]>({
+  const { data: orders = [], isLoading: ordersLoading, error: ordersError } = useQuery<(Order & { items: OrderItem[] })[]>({
     queryKey: [`/api/orders/store/${currentStore?.id}`],
     queryFn: async () => {
       if (!currentStore?.id) return [];
@@ -140,8 +140,15 @@ export default function ShopkeeperDashboard() {
     refetchOnWindowFocus: true,
   });
 
-  const { data: categories = [] } = useQuery<Category[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<Category[]>({
     queryKey: ["/api/categories"],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return response.json();
+    },
+    retry: 3,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Form for adding/editing products

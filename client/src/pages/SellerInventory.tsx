@@ -91,8 +91,15 @@ export default function SellerInventory() {
   });
 
   // Categories query
-  const { data: categories = [] } = useQuery<any[]>({
+  const { data: categories = [], isLoading: categoriesLoading, error: categoriesError } = useQuery<any[]>({
     queryKey: ["/api/categories"],
+    queryFn: async () => {
+      const response = await fetch('/api/categories');
+      if (!response.ok) throw new Error('Failed to fetch categories');
+      return response.json();
+    },
+    retry: 3,
+    staleTime: 10 * 60 * 1000, // 10 minutes
   });
 
   // Filter products based on search and filters

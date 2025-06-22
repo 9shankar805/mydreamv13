@@ -5,6 +5,27 @@ export async function runMigrations() {
   try {
     console.log("Running database migrations...");
 
+    // Create users table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        email TEXT NOT NULL UNIQUE,
+        password TEXT NOT NULL,
+        full_name TEXT NOT NULL,
+        username TEXT UNIQUE,
+        phone TEXT,
+        address TEXT,
+        city TEXT,
+        state TEXT,
+        role TEXT NOT NULL DEFAULT 'customer',
+        is_active BOOLEAN DEFAULT true,
+        email_verified BOOLEAN DEFAULT false,
+        phone_verified BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
     // Create admin_users table
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS admin_users (
@@ -15,6 +36,126 @@ export async function runMigrations() {
         role TEXT NOT NULL DEFAULT 'admin',
         created_at TIMESTAMP DEFAULT NOW() NOT NULL,
         is_active BOOLEAN DEFAULT true
+      )
+    `);
+
+    // Create categories table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS categories (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL UNIQUE,
+        slug TEXT NOT NULL UNIQUE,
+        description TEXT,
+        icon TEXT NOT NULL DEFAULT 'package',
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+
+    // Create stores table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS stores (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        slug TEXT UNIQUE,
+        description TEXT,
+        owner_id INTEGER REFERENCES users(id) NOT NULL DEFAULT 1,
+        address TEXT,
+        location TEXT,
+        city TEXT,
+        state TEXT,
+        country TEXT,
+        postal_code TEXT,
+        phone TEXT,
+        website TEXT,
+        rating DECIMAL(3,2) DEFAULT 0.00,
+        total_reviews INTEGER DEFAULT 0,
+        logo TEXT,
+        cover_image TEXT,
+        featured BOOLEAN DEFAULT false,
+        is_active BOOLEAN DEFAULT true,
+        store_type TEXT DEFAULT 'retail',
+        cuisine_type TEXT,
+        delivery_time TEXT,
+        minimum_order DECIMAL(10,2),
+        delivery_fee DECIMAL(10,2),
+        is_delivery_available BOOLEAN DEFAULT false,
+        opening_hours TEXT,
+        latitude DECIMAL(10,8),
+        longitude DECIMAL(11,8),
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW()
+      )
+    `);
+
+    // Create products table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS products (
+        id SERIAL PRIMARY KEY,
+        name TEXT NOT NULL,
+        slug TEXT NOT NULL UNIQUE,
+        description TEXT,
+        price DECIMAL(10, 2) NOT NULL,
+        original_price DECIMAL(10, 2),
+        category_id INTEGER REFERENCES categories(id),
+        store_id INTEGER REFERENCES stores(id) NOT NULL,
+        stock INTEGER DEFAULT 0,
+        image_url TEXT NOT NULL DEFAULT '',
+        images TEXT[] DEFAULT '{}',
+        rating DECIMAL(3, 2) DEFAULT 0.00,
+        total_reviews INTEGER DEFAULT 0,
+        is_active BOOLEAN DEFAULT true,
+        is_fast_sell BOOLEAN DEFAULT false,
+        is_on_offer BOOLEAN DEFAULT false,
+        offer_percentage INTEGER DEFAULT 0,
+        offer_end_date TEXT,
+        product_type TEXT NOT NULL DEFAULT 'retail',
+        preparation_time TEXT,
+        ingredients TEXT[] DEFAULT '{}',
+        allergens TEXT[] DEFAULT '{}',
+        spice_level TEXT,
+        is_vegetarian BOOLEAN DEFAULT false,
+        is_vegan BOOLEAN DEFAULT false,
+        nutrition_info TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+
+    // Create orders table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS orders (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id) NOT NULL,
+        store_id INTEGER REFERENCES stores(id) NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        total_amount DECIMAL(10, 2) NOT NULL,
+        delivery_fee DECIMAL(10, 2) DEFAULT 0.00,
+        tax_amount DECIMAL(10, 2) DEFAULT 0.00,
+        discount_amount DECIMAL(10, 2) DEFAULT 0.00,
+        final_amount DECIMAL(10, 2) NOT NULL,
+        payment_method TEXT NOT NULL DEFAULT 'cash',
+        payment_status TEXT NOT NULL DEFAULT 'pending',
+        delivery_address TEXT NOT NULL,
+        delivery_instructions TEXT,
+        estimated_delivery_time TIMESTAMP,
+        actual_delivery_time TIMESTAMP,
+        order_notes TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL,
+        updated_at TIMESTAMP DEFAULT NOW() NOT NULL
+      )
+    `);
+
+    // Create order_items table
+    await db.execute(sql`
+      CREATE TABLE IF NOT EXISTS order_items (
+        id SERIAL PRIMARY KEY,
+        order_id INTEGER REFERENCES orders(id) NOT NULL,
+        product_id INTEGER REFERENCES products(id) NOT NULL,
+        quantity INTEGER NOT NULL,
+        unit_price DECIMAL(10, 2) NOT NULL,
+        total_price DECIMAL(10, 2) NOT NULL,
+        special_instructions TEXT,
+        created_at TIMESTAMP DEFAULT NOW() NOT NULL
       )
     `);
 
@@ -648,23 +789,6 @@ export async function runMigrations() {
         updated_at TIMESTAMP DEFAULT NOW(),
         UNIQUE(user_id, endpoint)
       )
-    `);
-
-    // Create order_items table
-    await db.execute(sql`
-      CREATE TABLE IF NOT EXISTS order_items (
-        id SERIAL PRIMARY KEY,
-        order_id INTEGER REFERENCES orders(id) NOT NULL,
-        product_id INTEGER REFERENCES products(id) NOT NULL,
-        quantity INTEGER NOT NULL,
-        price DECIMAL(10,2) NOT NULL,
-        store_id INTEGER REFERENCES stores(id) NOT NULL
-      )
-    `);
-
-    // Ensure store_id column exists in order_items table
-    await db.execute(sql`
-      ALTER TABLE order_items ADD COLUMN IF NOT EXISTS store_id INTEGER REFERENCES stores(id)
     `);
 
     // Create missing admin panel tables

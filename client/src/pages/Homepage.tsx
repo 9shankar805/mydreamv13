@@ -15,7 +15,7 @@ import ProductCard from "@/components/ProductCard";
 import StoreCard from "@/components/StoreCard";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppMode } from "@/hooks/useAppMode";
-import type { Product, Store } from "@shared/schema";
+import type { Product, Store, Category } from "@shared/schema";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
 import { useEffect, useRef, useState } from "react";
@@ -131,33 +131,20 @@ export default function Homepage() {
     }
   }, [user, isLoading, setLocation]);
 
-  const shoppingCategories = [
-    { name: "Electronics", icon: "📱", href: "/products?category=4" },
-    { name: "Clothing", icon: "👕", href: "/products?category=5" },
-    { name: "Home & Garden", icon: "🏠", href: "/products?category=3" },
-    { name: "Books", icon: "📚", href: "/products?category=6" },
-  ];
+  // Fetch categories from API
+  const { data: categories = [] } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+    retry: 3,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
 
-  const foodCategories = [
-    {
-      name: "Indian Cuisine",
-      icon: "🍛",
-      href: "/products?category=food&cuisine=indian",
-    },
-    {
-      name: "Fast Food",
-      icon: "🍔",
-      href: "/products?category=food&cuisine=fast-food",
-    },
-    { name: "Pizza", icon: "🍕", href: "/products?category=food&type=pizza" },
-    {
-      name: "Desserts",
-      icon: "🍰",
-      href: "/products?category=food&cuisine=desserts",
-    },
-  ];
+  // Filter categories based on mode
+  const shoppingCategoryIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // IDs 1-12 are shopping categories
+  const foodCategoryIds = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]; // IDs 13-24 are food categories
 
-  const categories = mode === "shopping" ? shoppingCategories : foodCategories;
+  const filteredCategories = mode === "shopping" 
+    ? categories.filter(cat => shoppingCategoryIds.includes(cat.id)).slice(0, 4)
+    : categories.filter(cat => foodCategoryIds.includes(cat.id)).slice(0, 4);
 
   const {
     data: products,
@@ -356,7 +343,7 @@ export default function Homepage() {
             "--swiper-pagination-bullet-inactive-opacity": "1",
             "--swiper-pagination-bullet-size": "10px",
             "--swiper-pagination-bullet-horizontal-gap": "6px",
-          }}
+          } as React.CSSProperties}
         >
           {slides.map((slide) => (
             <SwiperSlide key={slide.id}>
@@ -470,8 +457,8 @@ export default function Homepage() {
             </Link>
           </div>
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {categories.map((category) => (
-              <Link key={category.name} href={category.href}>
+            {filteredCategories.map((category) => (
+              <Link key={category.id} href={`/products?category=${category.id}`}>
                 <div className="category-card flex items-center gap-3 p-3 sm:p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow min-h-[70px] active:scale-95 transition-transform">
                   <div className="text-sm sm:text-base font-semibold text-foreground flex-1">
                     {category.name}

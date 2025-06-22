@@ -2,41 +2,57 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useAppMode } from "@/hooks/useAppMode";
+import { useQuery } from "@tanstack/react-query";
+
+interface Category {
+  id: number;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+}
 
 export default function Categories() {
   const { mode } = useAppMode();
 
-  const shoppingCategories = [
-    { name: "Electronics", icon: "📱", href: "/products?category=4" },
-    { name: "Clothing", icon: "👕", href: "/products?category=5" },
-    { name: "Books", icon: "📚", href: "/products?category=6" },
-    { name: "Sports", icon: "⚽", href: "/products?category=7" },
-    { name: "Beauty", icon: "💄", href: "/products?category=8" },
-    { name: "Toys", icon: "🧸", href: "/products?category=9" },
-    { name: "Health", icon: "🏥", href: "/products?category=10" },
-    { name: "Automotive", icon: "🚗", href: "/products?category=11" },
-    { name: "Garden", icon: "🌱", href: "/products?category=12" },
-    { name: "Groceries", icon: "🛒", href: "/products?category=2" },
-    { name: "Fancy Items", icon: "💎", href: "/products?category=3" },
-  ];
+  // Fetch categories from API
+  const { data: categories = [], isLoading, error } = useQuery<Category[]>({
+    queryKey: ["/api/categories"],
+    retry: 3,
+    staleTime: 10 * 60 * 1000, // 10 minutes
+  });
 
-  const foodCategories = [
-    { name: "Indian Cuisine", icon: "🍛", href: "/products?category=food&cuisine=indian" },
-    { name: "Chinese", icon: "🥢", href: "/products?category=food&cuisine=chinese" },
-    { name: "Fast Food", icon: "🍔", href: "/products?category=food&cuisine=fast-food" },
-    { name: "Italian", icon: "🍝", href: "/products?category=food&cuisine=italian" },
-    { name: "Mexican", icon: "🌮", href: "/products?category=food&cuisine=mexican" },
-    { name: "Continental", icon: "🍽️", href: "/products?category=food&cuisine=continental" },
-    { name: "Desserts & Sweets", icon: "🍰", href: "/products?category=food&cuisine=desserts" },
-    { name: "Beverages", icon: "🥤", href: "/products?category=food&cuisine=beverages" },
-    { name: "Pizza", icon: "🍕", href: "/products?category=food&type=pizza" },
-    { name: "Biryani", icon: "🍚", href: "/products?category=food&type=biryani" },
-    { name: "Snacks", icon: "🍿", href: "/products?category=food&type=snacks" },
-    { name: "Healthy Food", icon: "🥗", href: "/products?category=food&type=healthy" },
-  ];
+  // Filter categories based on mode
+  const shoppingCategoryIds = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]; // IDs 1-12 are shopping categories
+  const foodCategoryIds = [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24]; // IDs 13-24 are food categories
 
-  const categories = mode === 'shopping' ? shoppingCategories : foodCategories;
+  const filteredCategories = mode === 'shopping' 
+    ? categories.filter(cat => shoppingCategoryIds.includes(cat.id))
+    : categories.filter(cat => foodCategoryIds.includes(cat.id));
+
   const pageTitle = mode === 'shopping' ? 'All Categories' : 'Food Menu';
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading categories...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-destructive mb-4">Failed to load categories</p>
+          <Button onClick={() => window.location.reload()}>Retry</Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -52,8 +68,8 @@ export default function Categories() {
         </div>
         
         <div className="grid grid-cols-4 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2 sm:gap-4">
-          {categories.map((category) => (
-            <Link key={category.name} href={category.href}>
+          {filteredCategories.map((category) => (
+            <Link key={category.id} href={`/products?category=${category.id}`}>
               <div className="category-card text-center hover:shadow-lg transition-shadow p-2 sm:p-4">
                 <div className="text-2xl sm:text-3xl mb-1 sm:mb-2">{category.icon}</div>
                 <div className="text-xs sm:text-sm font-semibold text-foreground">{category.name}</div>
